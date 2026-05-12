@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabaseClient } from '@/storage/database/supabase-client';
+import { createClient } from '@supabase/supabase-js';
 import * as XLSX from 'xlsx';
 
 export async function GET(request: NextRequest) {
@@ -7,7 +7,11 @@ export async function GET(request: NextRequest) {
     if (request.headers.get('authorization') !== 'Bearer admin123') {
       return NextResponse.json({ error: '未授权' }, { status: 401 });
     }
-    const supabase = getSupabaseClient();
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      { auth: { autoRefreshToken: false, persistSession: false } }
+    );
     const { data, error } = await supabase
       .from('experiment_sessions')
       .select('*')
