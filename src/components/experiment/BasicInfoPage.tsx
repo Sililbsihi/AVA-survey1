@@ -4,15 +4,15 @@ import { useState } from 'react';
 import { useExperiment } from '@/contexts/ExperimentContext';
 
 const basicQuestions = [
-  { id: 'name', type: 'input', label: '真实姓名', placeholder: '请输入您的真实姓名' },
-  { id: 'gender', type: 'radio', label: '性别', options: ['女', '男'] },
-  { id: 'age', type: 'input', label: '年龄', placeholder: '请输入您的年龄', inputMode: 'numeric' },
-  { id: 'phone', type: 'input', label: '手机号', placeholder: '请输入您的手机号', inputMode: 'numeric' },
-  { id: 'education', type: 'select', label: '受教育程度', options: ['初中及以下', '高中/中专', '大专', '本科', '硕士', '博士及以上'] },
-  { id: 'hasLicense', type: 'radio', label: '有无驾照', options: ['有', '无'] },
-  { id: 'drivingYears', type: 'input', label: '驾龄（年）', placeholder: '请输入您的驾龄', inputMode: 'numeric', condition: { questionId: 'hasLicense', value: '有' } },
-  { id: 'drivingKm', type: 'input', label: '驾驶里程（km）', placeholder: '请输入您的驾驶里程', inputMode: 'numeric', condition: { questionId: 'hasLicense', value: '有' } },
-  { id: 'hasAssistDrive', type: 'radio', label: '有无辅助驾驶经验（自适应巡航、车道保持、自动泊车、自动紧急制动等）', options: ['有', '无'], condition: { questionId: 'hasLicense', value: '有' } },
+  { id: 'name', type: 'input' as const, label: '真实姓名', placeholder: '请输入您的真实姓名' },
+  { id: 'gender', type: 'radio' as const, label: '性别', options: ['女', '男'] },
+  { id: 'age', type: 'input' as const, label: '年龄', placeholder: '请输入您的年龄', inputMode: 'numeric' as const },
+  { id: 'phone', type: 'input' as const, label: '手机号', placeholder: '请输入您的手机号', inputMode: 'numeric' as const },
+  { id: 'education', type: 'select' as const, label: '受教育程度', options: ['初中及以下', '高中/中专', '大专', '本科', '硕士', '博士及以上'] },
+  { id: 'hasLicense', type: 'radio' as const, label: '有无驾照', options: ['有', '无'] },
+  { id: 'drivingYears', type: 'input' as const, label: '驾龄（年）', placeholder: '请输入您的驾龄', inputMode: 'numeric' as const, condition: { questionId: 'hasLicense', value: '有' } },
+  { id: 'drivingKm', type: 'input' as const, label: '驾驶里程（km）', placeholder: '请输入您的驾驶里程', inputMode: 'numeric' as const, condition: { questionId: 'hasLicense', value: '有' } },
+  { id: 'hasAssistDrive', type: 'radio' as const, label: '有无辅助驾驶经验（自适应巡航、车道保持、自动泊车、自动紧急制动等）', options: ['有', '无'], condition: { questionId: 'hasLicense', value: '有' } },
 ];
 
 const socialQuestions = [
@@ -28,14 +28,14 @@ const socialQuestions = [
 ];
 
 export default function BasicInfoPage() {
-  const { setStep, updateData, data } = useExperiment();
+  const { setStep, updateData } = useExperiment();
   const [answers, setAnswers] = useState<Record<string, string | number | undefined>>({});
   const [currentSection, setCurrentSection] = useState<'basic' | 'social'>('basic');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleBasicInput = (id: string, value: string) => {
-    const processedValue = id === 'phone' || id === 'age' ? value.replace(/\D/g, '') : value;
+    const processedValue = (id === 'phone' || id === 'age') ? value.replace(/\D/g, '') : value;
     setAnswers(prev => ({ ...prev, [id]: processedValue }));
     setError('');
   };
@@ -55,36 +55,20 @@ export default function BasicInfoPage() {
     return answers[q.id] !== undefined;
   });
 
-  const socialAnswered = socialQuestions.filter(q => answers[q.id] !== undefined).length;
-
   const handleBasicSubmit = () => {
     const unanswered = basicQuestions.filter(q => {
       if (q.condition && answers[q.condition.questionId] !== q.condition.value) return false;
       return answers[q.id] === undefined;
     });
-    if (unanswered.length > 0) {
-      setError('请回答所有问题');
-      return;
-    }
+    if (unanswered.length > 0) { setError('请回答所有问题'); return; }
     setCurrentSection('social');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleSocialSubmit = () => {
     const unanswered = socialQuestions.filter(q => answers[q.id] === undefined);
-    if (unanswered.length > 0) {
-      setError('请回答所有问题');
-      return;
-    }
-    // 检查注意力题q17必须是5
-    if (answers.q17 !== 5) {
-      setError('抱歉，您的答卷未通过注意力检测');
-      setIsSubmitting(true);
-      setTimeout(() => {
-        window.location.reload();
-      }, 2000);
-      return;
-    }
+    if (unanswered.length > 0) { setError('请回答所有问题'); return; }
+    // 注意力题回答错误不提示，继续实验
     setIsSubmitting(true);
     updateData({
       name: answers.name as string,
@@ -130,8 +114,7 @@ export default function BasicInfoPage() {
             return (
               <div key={q.id} className="question-card">
                 <div className="question-title">
-                  {q.label}
-                  {q.type !== 'radio' && <span className="required">*</span>}
+                  {q.label}<span className="required">*</span>
                 </div>
                 {q.type === 'input' && (
                   <input
@@ -163,8 +146,7 @@ export default function BasicInfoPage() {
                         className={`radio-option ${answers[q.id] === opt ? 'selected' : ''}`}
                         onClick={() => handleRadio(q.id, opt)}
                       >
-                        <div className="radio-circle" />
-                        <span className="radio-label">{opt}</span>
+                        <div className="radio-circle" /><span className="radio-label">{opt}</span>
                       </div>
                     ))}
                   </div>
@@ -186,13 +168,12 @@ export default function BasicInfoPage() {
       ) : (
         <>
           <h1 className="page-title">第一部分</h1>
-          <p className="page-subtitle">已完成 {socialAnswered}/{socialQuestions.length} 题</p>
+          <p className="page-subtitle">已完成 {socialQuestions.filter(q => answers[q.id] !== undefined).length}/{socialQuestions.length} 题</p>
 
           {socialQuestions.map((q, idx) => (
             <div key={q.id} className="question-card">
               <div className="question-title">
-                {idx + 1}. {q.text}
-                <span className="required">*</span>
+                {idx + 1}. {q.text}<span className="required">*</span>
               </div>
               <div className="rating-container">
                 <span className="rating-label">很不同意</span>
@@ -201,9 +182,7 @@ export default function BasicInfoPage() {
                     <button
                       className={`rating-button ${answers[q.id] === value ? 'selected' : ''}`}
                       onClick={() => handleSocialSelect(q.id, value)}
-                    >
-                      {value}
-                    </button>
+                    >{value}</button>
                   </div>
                 ))}
                 <span className="rating-label">很同意</span>
@@ -218,9 +197,7 @@ export default function BasicInfoPage() {
           )}
 
           <button className="submit-button" onClick={handleSocialSubmit} disabled={isSubmitting}>
-            {isSubmitting ? (
-              <><span className="loading-spinner" />提交中...</>
-            ) : '下一步'}
+            {isSubmitting ? <><span className="loading-spinner" />提交中...</> : '下一步'}
           </button>
         </>
       )}
