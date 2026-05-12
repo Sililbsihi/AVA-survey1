@@ -9,7 +9,6 @@ export async function POST(request: NextRequest) {
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       { auth: { autoRefreshToken: false, persistSession: false } }
     );
-
     const row: Record<string, unknown> = {
       q1: body.q1, q2: body.q2, q3: body.q3, q4: body.q4,
       q5: body.q5, q6: body.q6, q7: body.q7,
@@ -32,7 +31,6 @@ export async function POST(request: NextRequest) {
       scenario_b_accept_public: body.scenarioB?.acceptPublic ?? 0,
       scenario_b_manipulation: body.scenarioB?.manipulationCheck || '',
     };
-
     const { error } = await supabase.from('experiment_sessions').insert(row);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json({ success: true });
