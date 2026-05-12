@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useExperiment } from '@/contexts/ExperimentContext';
 
 export default function CompletePage() {
   const { data } = useExperiment();
   const [submitted, setSubmitted] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
   useEffect(() => {
     if (!submitted) {
@@ -15,18 +15,21 @@ export default function CompletePage() {
   }, []);
 
   const submitData = async () => {
-    setIsSubmitting(true);
     try {
-      await fetch('/api/experiment/submit', {
+      const res = await fetch('/api/experiment/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
-      setSubmitted(true);
-    } catch {
-      setSubmitted(true);
+      const result = await res.json();
+      if (result.success) {
+        setSubmitted(true);
+      } else {
+        setSubmitError(result.detail || result.error || '提交失败');
+      }
+    } catch (err) {
+      setSubmitError('网络错误：' + String(err));
     }
-    setIsSubmitting(false);
   };
 
   return (
@@ -54,6 +57,12 @@ export default function CompletePage() {
           Wechat: CHEL_7777
         </p>
       </div>
+
+      {submitError && (
+        <div style={{ marginTop: '16px', padding: '12px', background: 'rgba(255,82,82,0.1)', borderRadius: '8px' }}>
+          <p style={{ color: '#ff5252', fontSize: '12px' }}>{submitError}</p>
+        </div>
+      )}
     </div>
   );
 }
