@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/storage/database/supabase-client';
+import { getSupabaseClient } from '@/storage/database/supabase-client';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const supabase = createClient();
-
+    const client = getSupabaseClient();
     const rowData = {
       q1: body.q1,
       q2: body.q2,
