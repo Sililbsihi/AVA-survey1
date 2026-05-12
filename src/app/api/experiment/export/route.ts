@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@/storage/database/supabase-client';
 import * as XLSX from 'xlsx';
 
 export async function GET(request: NextRequest) {
@@ -8,7 +9,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: '未授权' }, { status: 401 });
     }
 
-    const { createClient } = await import('@/storage/database/supabase-client');
     const supabase = createClient();
 
     const { data, error } = await supabase
@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
       .order('created_at', { ascending: true });
 
     if (error) {
-      return NextResponse.json({ error: '查询失败' }, { status: 500 });
+      return NextResponse.json({ error: '查询失败', detail: error.message }, { status: 500 });
     }
 
     const wb = XLSX.utils.book_new();
@@ -34,6 +34,6 @@ export async function GET(request: NextRequest) {
     });
   } catch (err) {
     console.error('Export error:', err);
-    return NextResponse.json({ error: '导出失败' }, { status: 500 });
+    return NextResponse.json({ error: '导出失败', detail: String(err) }, { status: 500 });
   }
 }
