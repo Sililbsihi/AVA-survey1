@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
+import { createClient } from '@/storage/database/supabase-client';
 
 export async function GET() {
   try {
-    const { createClient } = await import('@/storage/database/supabase-client');
     const supabase = createClient();
 
     const { count, error } = await supabase
@@ -10,12 +10,13 @@ export async function GET() {
       .select('*', { count: 'exact', head: true });
 
     if (error) {
-      return NextResponse.json({ error: '查询失败' }, { status: 500 });
+      console.error('Stats error:', error);
+      return NextResponse.json({ total: 0, error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ total: count || 0, today: 0 });
+    return NextResponse.json({ total: count || 0 });
   } catch (err) {
     console.error('Stats error:', err);
-    return NextResponse.json({ error: '服务器错误' }, { status: 500 });
+    return NextResponse.json({ total: 0, error: String(err) }, { status: 500 });
   }
 }
