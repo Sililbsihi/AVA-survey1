@@ -37,10 +37,24 @@ export default function CompletePage() {
         请点击下方按钮领取被试费
       </p>
 
-      <a href="https://www.credamo.com/s/ZNBJBj" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', display: 'block' }}>
-        <button className="submit-button" style={{ marginBottom: '24px' }}>被试费领取</button>
-      </a> 
+        <a
+          href="https://www.credamo.com/s/ZNBJBj/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block"
+        >
+          <Button className="w-full game-button bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600">
+            <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            被试费领取
+            <svg className="w-4 h-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
+          </Button>
+        </a>
         <p className="text-center text-amber-400 text-sm mt-3">点击填写信息，一周内发放</p>
+    
 
       <div style={{ marginTop: '24px', padding: '16px', background: 'rgba(255,255,255,0.05)', borderRadius: '12px' }}>
         <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '14px', lineHeight: '1.8' }}>
