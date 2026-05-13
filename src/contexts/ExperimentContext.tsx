@@ -6,7 +6,9 @@ import type { ExperimentData, ExperimentStep, ScreeningData, BasicInfoData, Soci
 interface ExperimentContextType {
   step: ExperimentStep;
   setStep: (step: ExperimentStep) => void;
+  // 这里保留 experimentData，同时增加 data 属性以匹配你的 CompletePage
   experimentData: ExperimentData;
+  data: ExperimentData; 
   updateScreening: (data: Partial<ScreeningData>) => void;
   updateBasicInfo: (data: Partial<BasicInfoData>) => void;
   updateSocialInfluence: (data: Partial<SocialInfluenceData>) => void;
@@ -58,7 +60,20 @@ export function ExperimentProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <ExperimentContext.Provider value={{ step, setStep, experimentData, updateScreening, updateBasicInfo, updateSocialInfluence, updateScenario, updateScenarioOrder, resetExperiment }}>
+    <ExperimentContext.Provider 
+      value={{ 
+        step, 
+        setStep, 
+        experimentData, 
+        data: experimentData, // 将 experimentData 同时赋值给 data
+        updateScreening, 
+        updateBasicInfo, 
+        updateSocialInfluence, 
+        updateScenario, 
+        updateScenarioOrder, 
+        resetExperiment 
+      }}
+    >
       {children}
     </ExperimentContext.Provider>
   );
