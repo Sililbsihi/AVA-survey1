@@ -1,68 +1,58 @@
-export interface ExperimentSession {
-  id?: number;
-  created_at?: string;
-  
-  // 筛选问卷
-  q1: number;
-  q2: number;
-  q3: number;
-  q4: number;
-  q5: number;
-  q6: number;
-  q7: number;
-  
-  // 基本信息
+export interface ScreeningData {
+  q1: number | null;
+  q2: number | null;
+  q3: number | null;
+  q4: number | null;
+  q5: number | null;
+  q6: number | null;
+  q7: number | null;
+}
+
+export interface BasicInfoData {
   name: string;
   gender: string;
-  age: string;
+  age: number | null;
   phone: string;
   education: string;
-  has_license: string;
-  driving_years?: string;
-  driving_km?: string;
-  has_assist_drive?: string;
-  
-  // 社会影响量表
-  q9: number;
-  q10: number;
-  q11: number;
-  q12: number;
-  q13: number;
-  q14: number;
-  q15: number;
-  q16: number;
-  
-  // 注意力题
-  q17: number;
-  
-  // 情境实验
-  scenario_order: string;
-  scenario_a_decision: string;
-  scenario_a_accept_self: number;
-  scenario_a_accept_public: number;
-  scenario_a_manipulation: string;
-  scenario_b_decision: string;
-  scenario_b_accept_self: number;
-  scenario_b_accept_public: number;
-  scenario_b_manipulation: string;
+  hasDriverLicense: string;
+  drivingExperienceYears: number | null;
+  drivingMileage: number | null;
+  hasAssistDrivingExp: string;
 }
 
-export interface BasicQuestion {
-  id: string;
-  type: 'input' | 'radio' | 'select' | 'conditional';
-  label: string;
-  required?: boolean;
-  options?: string[];
-  placeholder?: string;
-  condition?: {
-    questionId: string;
-    value: string;
-  };
+export interface SocialInfluenceData {
+  q9: number | null;
+  q10: number | null;
+  q11: number | null;
+  q12: number | null;
+  q13: number | null;
+  q14: number | null;
+  q15: number | null;
+  q16: number | null;
+  q17: number | null;
 }
 
-export interface SocialQuestion {
-  id: string;
-  text: string;
-  scale: number;
-  labels?: string[];
+export interface ScenarioData {
+  decision: string;
+  acceptSelf: number | null;
+  acceptPublic: number | null;
+  manipulationCheck: string;
 }
+
+export interface ExperimentData {
+  screening: ScreeningData;
+  basicInfo: BasicInfoData;
+  socialInfluence: SocialInfluenceData;
+  scenarioA: ScenarioData;
+  scenarioB: ScenarioData;
+  scenarioOrder: string[];
+}
+
+export type ExperimentStep =
+  | 'screening'
+  | 'basic-info'
+  | 'social-influence'
+  | 'instruction'
+  | 'scenario'
+  | 'complete'
+  | 'disqualified';
