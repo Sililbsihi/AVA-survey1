@@ -39,7 +39,8 @@ export default function CompletePage() {
 
       <a href="https://www.credamo.com/s/ZNBJBj" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', display: 'block' }}>
         <button className="submit-button" style={{ marginBottom: '24px' }}>被试费领取</button>
-      </a>
+      </a> 
+        <p className="text-center text-amber-400 text-sm mt-3">点击填写信息，一周内发放</p>
 
       <div style={{ marginTop: '24px', padding: '16px', background: 'rgba(255,255,255,0.05)', borderRadius: '12px' }}>
         <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '14px', lineHeight: '1.8' }}>
