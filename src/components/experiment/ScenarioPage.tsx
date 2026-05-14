@@ -128,27 +128,31 @@ export default function ScenarioPage() {
     }
   };
 
+  // 图片查看模式 - 直接显示图片，无任何文字
   if (state.mode === 'scenario') {
     const scenario = getCurrentScenario();
     return (
       <div className="mobile-container" ref={containerRef}>
         <div className="stars-bg" />
         
-        <div className="flex-1 flex flex-col min-h-screen py-4">
-          <div className="flex-1 flex items-center justify-center px-2">
-            <div className="w-full h-full max-h-[75vh]">
+        <div className="flex-1 flex flex-col py-4">
+          {/* 图片最大化显示 - 确保不被遮挡 */}
+          <div className="flex-1 flex items-center justify-center px-2 py-2 overflow-hidden">
+            <div className="w-full" style={{ maxHeight: 'calc(100vh - 200px)' }}>
               <img 
                 src={scenario.image} 
                 alt="驾驶场景"
                 className="w-full h-full object-contain rounded-xl"
+                style={{ maxHeight: 'calc(100vh - 220px)' }}
               />
             </div>
           </div>
           
-          <div className="flex-shrink-0 pt-4 pb-6 px-2">
+          {/* 确认按钮 - 固定在底部，有足够空间 */}
+          <div className="flex-shrink-0 pt-4 pb-2 px-2">
             <button 
               onClick={(e) => { handleRipple(e); handleConfirmView(); }}
-              className="btn-glow w-full ripple-container"
+              className="btn-glow w-full"
             >
               <span>我已阅读完毕</span>
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -161,6 +165,7 @@ export default function ScenarioPage() {
     );
   }
 
+  // 决策模式
   return (
     <div className="mobile-container" ref={containerRef}>
       <div className="stars-bg" />
@@ -178,6 +183,7 @@ export default function ScenarioPage() {
       </div>
 
       <div className="flex-1 space-y-4">
+        {/* 行为决策 */}
         <div className="question-card">
           <span className="question-label">行为决策</span>
           <p className="question-text">
@@ -205,6 +211,7 @@ export default function ScenarioPage() {
           </div>
         </div>
 
+        {/* 接受度评分1 */}
         <div className="question-card">
           <span className="question-label">接受度评分</span>
           <p className="question-text">
@@ -217,7 +224,7 @@ export default function ScenarioPage() {
                 <button
                   key={val}
                   onClick={(e) => { e.stopPropagation(); handleRipple(e); setState(prev => ({ ...prev, acceptance1: val })); }}
-                  className={`num-option ripple-effect ${state.acceptance1 === val ? 'selected' : ''}`}
+                  className={`num-option ${state.acceptance1 === val ? 'selected' : ''}`}
                 >
                   {val}
                 </button>
@@ -227,6 +234,7 @@ export default function ScenarioPage() {
           </div>
         </div>
 
+        {/* 接受度评分2 */}
         <div className="question-card">
           <span className="question-label">接受度评分</span>
           <p className="question-text">
@@ -239,7 +247,7 @@ export default function ScenarioPage() {
                 <button
                   key={val}
                   onClick={(e) => { e.stopPropagation(); handleRipple(e); setState(prev => ({ ...prev, acceptance2: val })); }}
-                  className={`num-option ripple-effect ${state.acceptance2 === val ? 'selected' : ''}`}
+                  className={`num-option ${state.acceptance2 === val ? 'selected' : ''}`}
                 >
                   {val}
                 </button>
@@ -249,6 +257,7 @@ export default function ScenarioPage() {
           </div>
         </div>
 
+        {/* 操纵检验 */}
         <div className="question-card">
           <span className="question-label">操纵检验</span>
           <p className="question-text">
@@ -271,7 +280,7 @@ export default function ScenarioPage() {
       </div>
 
       <div className="pt-4 pb-8">
-        <button onClick={(e) => { handleRipple(e); handleNextScenario(); }} className="btn-glow ripple-container">
+        <button onClick={(e) => { handleRipple(e); handleNextScenario(); }} className="btn-glow">
           <span>{state.currentScenarioIndex === 0 ? '进入下一情境' : '完成实验'}</span>
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
