@@ -1,5 +1,5 @@
 'use client';
-import { Button } from "@/components/ui/button";
+
 import { createContext, useContext, useState, ReactNode } from 'react';
 import type { ExperimentData, ExperimentStep, ScreeningData, BasicInfoData, SocialInfluenceData, ScenarioData } from '@/types/experiment';
 
@@ -7,7 +7,6 @@ interface ExperimentContextType {
   step: ExperimentStep;
   setStep: (step: ExperimentStep) => void;
   experimentData: ExperimentData;
-  data: ExperimentData; // 这里强行加上 data 属
   updateScreening: (data: Partial<ScreeningData>) => void;
   updateBasicInfo: (data: Partial<BasicInfoData>) => void;
   updateSocialInfluence: (data: Partial<SocialInfluenceData>) => void;
@@ -59,13 +58,7 @@ export function ExperimentProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <ExperimentContext.Provider 
-      value={{ 
-        step, setStep, experimentData, 
-        data: experimentData, // 这里把 experimentData 映射给 data
-        updateScreening, updateBasicInfo, updateSocialInfluence, updateScenario, updateScenarioOrder, resetExperiment 
-      }}
-    >
+    <ExperimentContext.Provider value={{ step, setStep, experimentData, updateScreening, updateBasicInfo, updateSocialInfluence, updateScenario, updateScenarioOrder, resetExperiment }}>
       {children}
     </ExperimentContext.Provider>
   );
