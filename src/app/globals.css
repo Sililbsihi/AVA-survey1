@@ -37,7 +37,6 @@ body {
   color: #fff;
 }
 
-/* 动态星空背景 */
 .stars-bg {
   position: fixed;
   top: 0;
@@ -82,7 +81,6 @@ body {
   50% { opacity: 1; transform: scale(1.02); }
 }
 
-/* 果汁溅开涟漪效果 */
 .ripple-container {
   position: relative;
   overflow: hidden;
@@ -113,7 +111,6 @@ body {
   }
 }
 
-/* 点击粒子效果 */
 .particle {
   position: absolute;
   width: 5px;
@@ -134,7 +131,6 @@ body {
   }
 }
 
-/* 移动端容器 - 垂直居中适配 */
 .mobile-container {
   position: relative;
   z-index: 1;
@@ -147,7 +143,6 @@ body {
   flex-direction: column;
 }
 
-/* 导航头部 */
 .nav-header {
   position: sticky;
   top: 0;
@@ -162,7 +157,6 @@ body {
   padding-right: 20px;
 }
 
-/* 进度条 */
 .progress-bar {
   width: 100%;
   height: 6px;
@@ -198,7 +192,6 @@ body {
   100% { transform: translateX(100%); }
 }
 
-/* 标签样式 */
 .tag {
   display: inline-flex;
   align-items: center;
@@ -227,7 +220,6 @@ body {
   50% { opacity: 0.6; transform: scale(0.8); }
 }
 
-/* 磨砂玻璃卡片 */
 .glass-card {
   background: var(--glass-bg);
   backdrop-filter: blur(24px);
@@ -252,7 +244,6 @@ body {
   background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
 }
 
-/* 发光按钮 */
 .btn-glow {
   position: relative;
   display: flex;
@@ -317,7 +308,6 @@ body {
   display: none;
 }
 
-/* 选项按钮 - 单选 */
 .option-btn {
   position: relative;
   display: flex;
@@ -360,7 +350,6 @@ body {
   box-shadow: 0 0 8px var(--accent);
 }
 
-/* 数字选项 - 1-5 */
 .num-option {
   position: relative;
   display: flex;
@@ -376,7 +365,9 @@ body {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: none !important;
   z-index: 1;
+  overflow: visible;
 }
 
 .num-option:hover {
@@ -409,7 +400,6 @@ body {
   50% { opacity: 0.2; transform: scale(1.1); }
 }
 
-/* 紧凑数字选项 - 用于7选项 */
 .num-option-compact {
   position: relative;
   display: flex;
@@ -426,7 +416,6 @@ body {
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   flex-shrink: 0;
-  z-index: 1;
 }
 
 .num-option-compact:hover {
@@ -443,7 +432,6 @@ body {
   box-shadow: 0 0 16px var(--glow);
 }
 
-/* 输入框 */
 .input-glow {
   width: 100%;
   padding: 16px 20px;
@@ -466,7 +454,6 @@ body {
   box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
 }
 
-/* 选择框 */
 .select-glow {
   width: 100%;
   padding: 16px 20px;
@@ -495,7 +482,6 @@ body {
   color: #fff;
 }
 
-/* 警告框 */
 .warning-box {
   background: rgba(251, 191, 36, 0.1);
   border: 1px solid rgba(251, 191, 36, 0.3);
@@ -515,7 +501,6 @@ body {
   color: #fbbf24;
 }
 
-/* 成功框 */
 .success-box {
   background: rgba(52, 211, 153, 0.1);
   border: 1px solid rgba(52, 211, 153, 0.3);
@@ -535,7 +520,6 @@ body {
   gap: 8px;
 }
 
-/* 标题样式 */
 .title-gradient {
   background: linear-gradient(135deg, #fff 0%, #c7d2fe 100%);
   -webkit-background-clip: text;
@@ -543,7 +527,6 @@ body {
   background-clip: text;
 }
 
-/* 错误提示 */
 .error-text {
   color: #fca5a5;
   font-size: 14px;
@@ -555,7 +538,6 @@ body {
   margin-bottom: 16px;
 }
 
-/* 动画 */
 @keyframes float {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-8px); }
@@ -574,7 +556,6 @@ body {
   animation: glow-pulse 2s ease-in-out infinite;
 }
 
-/* 问题卡片 */
 .question-card {
   background: var(--glass-bg);
   backdrop-filter: blur(20px);
@@ -601,7 +582,6 @@ body {
   font-weight: 500;
 }
 
-/* 图片展示 */
 .scenario-image-container {
   width: 100%;
   border-radius: 20px;
@@ -621,7 +601,6 @@ body {
   display: block;
 }
 
-/* 阶段指示器 */
 .step-indicator {
   display: flex;
   align-items: center;
@@ -648,7 +627,6 @@ body {
   background: var(--success);
 }
 
-/* 滚动条美化 */
 ::-webkit-scrollbar {
   width: 6px;
 }
@@ -666,7 +644,6 @@ body {
   background: rgba(99, 102, 241, 0.6);
 }
 
-/* 禁用选择 */
 .no-select {
   user-select: none;
   -webkit-user-select: none;
