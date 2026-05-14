@@ -1,10 +1,18 @@
 import type { Metadata, Viewport } from 'next';
-import { ExperimentProvider } from '@/contexts/ExperimentContext'; // 1. 导入电箱
 import './globals.css';
+import { ExperimentProvider } from '@/contexts/ExperimentContext';
 
 export const metadata: Metadata = {
-  title: '自动驾驶接受度实验',
-  description: '自动驾驶接受度研究问卷',
+  title: {
+    default: '自动驾驶接受度实验',
+    template: '%s | 自动驾驶实验',
+  },
+  description: '自动驾驶技术接受度研究问卷调查',
+  keywords: ['自动驾驶', '问卷调查', '实验研究'],
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export const viewport: Viewport = {
@@ -14,11 +22,14 @@ export const viewport: Viewport = {
   userScalable: false,
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
     <html lang="zh-CN">
-      <body>
-        {/* 2. 用 Provider 把 children 包起来，这样全家都有电了 */}
+      <body className="antialiased gradient-animate min-h-screen overflow-x-hidden">
         <ExperimentProvider>
           {children}
         </ExperimentProvider>
