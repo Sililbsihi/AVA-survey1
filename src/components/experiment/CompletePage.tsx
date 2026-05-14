@@ -34,7 +34,7 @@ export default function CompletePage() {
       <div style={{ fontSize: '64px', marginBottom: '20px' }}>🎉</div>
       <h1 className="page-title">感谢参与！</h1>
       <p className="page-subtitle" style={{ fontSize: '16px', marginBottom: '30px' }}>
-        请点击下方按钮领取被试费
+        必须使用支付宝号码登录才能领取被试费
       </p>
 
         <a
@@ -43,7 +43,7 @@ export default function CompletePage() {
           rel="noopener noreferrer"
           className="block"
         >
-          <Button className="w-full game-button bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600">
+          <button className="w-full game-button bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600">
             <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
@@ -51,14 +51,14 @@ export default function CompletePage() {
             <svg className="w-4 h-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
             </svg>
-          </Button>
+          </button>
         </a>
-        <p className="text-center text-amber-400 text-sm mt-3">点击填写信息，一周内发放</p>
+        <p className="text-center text-amber-400 text-sm mt-3">请使用支付宝号码登录并填写信息，一周内发放</p>
     
 
       <div style={{ marginTop: '24px', padding: '16px', background: 'rgba(255,255,255,0.05)', borderRadius: '12px' }}>
         <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '14px', lineHeight: '1.8' }}>
-          有疑问可联系主试<br />Wechat: CHEL_7777
+          有疑问可联系主试<br />微信: CHEL_7777
         </p>
       </div>
 
