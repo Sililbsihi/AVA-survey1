@@ -1,34 +1,56 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useExperiment } from '@/contexts/ExperimentContext';
 
 export default function DisqualifiedPage() {
   const { resetExperiment } = useExperiment();
 
+  useEffect(() => {
+    resetExperiment();
+  }, [resetExperiment]);
+
   return (
     <div className="mobile-container">
-      <div className="text-center pt-8">
-        <div className="w-32 h-32 mx-auto mb-8 rounded-full bg-gradient-to-br from-slate-500 to-gray-600 flex items-center justify-center">
-          <svg className="w-16 h-16 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-          </svg>
+      <div className="nav-header sticky top-0 z-10 py-4 mb-6">
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-white/60 text-sm">自动驾驶接受度研究</span>
+          <span className="text-white/40 font-medium text-sm">结束</span>
         </div>
-        <h1 className="text-2xl font-bold text-slate-100 mb-4">抱歉</h1>
-        <p className="text-slate-400 mb-8">您不符合本次实验的参与条件。感谢您的关注！</p>
+        <div className="progress-bar">
+          <div className="progress-fill" style={{ width: '100%', background: 'rgba(255,255,255,0.2)' }} />
+        </div>
       </div>
 
-      <div className="glow-border bg-slate-800/80 backdrop-blur-sm rounded-2xl p-6 mb-6">
-        <p className="text-slate-300 text-sm text-center leading-relaxed">
-          本次实验对被试有特定的筛选条件要求，主要是确保样本的同质性。
+      <div className="text-center py-16">
+        <div className="mb-8">
+          <div className="w-28 h-28 mx-auto rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
+            <svg className="w-14 h-14 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </div>
+        </div>
+
+        <h2 className="text-2xl font-bold text-white mb-6">
+          感谢参与
+        </h2>
+        
+        <p className="text-white/60 mb-4">
+          您暂时不符合本次实验目标人群
         </p>
-        <p className="text-slate-400 text-sm text-center mt-4">
-          如有疑问，请联系主试了解更多信息。
+        
+        <p className="text-white/40">
+          下次实验期待您的参与
+        </p>
+
+        <div className="mt-12">
+          <div className="w-16 h-0.5 bg-gradient-to-r from-transparent via-white/20 to-transparent mx-auto"></div>
+        </div>
+
+        <p className="text-white/30 text-sm mt-8">
+          您可以关闭此页面
         </p>
       </div>
-
-      <button onClick={resetExperiment} className="w-full py-3 bg-slate-700/50 border border-slate-600 text-slate-200 hover:bg-slate-600/50 rounded-xl">
-        返回首页
-      </button>
     </div>
   );
 }
