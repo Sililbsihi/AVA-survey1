@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useExperiment } from '@/contexts/ExperimentContext';
 import Progress from '@/components/ui/progress';
 
@@ -82,8 +82,8 @@ export default function BasicInfoPage({ variant = 'info' }: { variant?: string }
       <div className="mobile-container">
         <div className="nav-header sticky top-0 z-10 py-4 mb-6">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-slate-400 text-sm">自动驾驶接受度研究</span>
-            <span className="text-primary font-medium text-sm">社会影响量表</span>
+            <span className="text-white/60 text-sm">自动驾驶接受度研究</span>
+            <span className="text-blue-400 font-medium text-sm">社会影响量表</span>
           </div>
           <Progress value={progress} />
         </div>
@@ -92,14 +92,14 @@ export default function BasicInfoPage({ variant = 'info' }: { variant?: string }
           <span className="tag">社会影响量表</span>
         </div>
 
-        <div className="card-glow p-6 mb-6">
+        <div className="glass-card p-6 mb-6">
           <h2 className="text-xl font-bold text-white mb-6">第二部分：社会影响</h2>
 
           {socialQuestions.map((q) => (
             <div key={q.id} className="mb-6 last:mb-0">
-              <p className="text-slate-200 mb-3 text-sm leading-relaxed">{q.text}</p>
+              <p className="text-white/90 mb-3 text-sm leading-relaxed">{q.text}</p>
               <div className="flex justify-between items-center gap-1">
-                <span className="text-slate-500 text-xs">很不同意</span>
+                <span className="text-white/40 text-xs">很不同意</span>
                 <div className="flex gap-2">
                   {[1, 2, 3, 4, 5, 6, 7].map(val => (
                     <button
@@ -111,19 +111,19 @@ export default function BasicInfoPage({ variant = 'info' }: { variant?: string }
                     </button>
                   ))}
                 </div>
-                <span className="text-slate-500 text-xs">很同意</span>
+                <span className="text-white/40 text-xs">很同意</span>
               </div>
             </div>
           ))}
         </div>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-lg">
-            <p className="text-red-400 text-sm text-center">{error}</p>
+          <div className="mb-4 p-3 bg-red-500/20 border border-red-500/40 rounded-xl">
+            <p className="text-red-300 text-sm text-center">{error}</p>
           </div>
         )}
 
-        <button onClick={handleSocialSubmit} className="btn-primary">
+        <button onClick={handleSocialSubmit} className="btn-primary ripple">
           进入情境实验
         </button>
       </div>
@@ -134,8 +134,8 @@ export default function BasicInfoPage({ variant = 'info' }: { variant?: string }
     <div className="mobile-container">
       <div className="nav-header sticky top-0 z-10 py-4 mb-6">
         <div className="flex items-center justify-between mb-3">
-          <span className="text-slate-400 text-sm">自动驾驶接受度研究</span>
-          <span className="text-primary font-medium text-sm">基本信息</span>
+          <span className="text-white/60 text-sm">自动驾驶接受度研究</span>
+          <span className="text-blue-400 font-medium text-sm">基本信息</span>
         </div>
         <Progress value={30} />
       </div>
@@ -144,23 +144,23 @@ export default function BasicInfoPage({ variant = 'info' }: { variant?: string }
         <span className="tag">基本信息</span>
       </div>
 
-      <div className="card-glow p-6 mb-6">
+      <div className="glass-card p-6 mb-6">
         <h2 className="text-xl font-bold text-white mb-6">第一部分：基本信息</h2>
 
         <div className="space-y-4">
           <div>
-            <label className="text-slate-300 text-sm mb-2 block">1. 姓名 *</label>
+            <label className="text-white/80 text-sm mb-2 block">1. 姓名 *</label>
             <input
               type="text"
               value={formData.name}
               onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-              className="w-full p-3 rounded-xl bg-slate-800/50 border border-slate-600 text-white focus:border-primary focus:outline-none"
+              className="input-field"
               placeholder="请输入姓名"
             />
           </div>
 
           <div>
-            <label className="text-slate-300 text-sm mb-2 block">2. 性别 *</label>
+            <label className="text-white/80 text-sm mb-2 block">2. 性别 *</label>
             <div className="flex gap-4">
               <button
                 onClick={() => setFormData(prev => ({ ...prev, gender: '女' }))}
@@ -178,18 +178,18 @@ export default function BasicInfoPage({ variant = 'info' }: { variant?: string }
           </div>
 
           <div>
-            <label className="text-slate-300 text-sm mb-2 block">3. 年龄 *</label>
+            <label className="text-white/80 text-sm mb-2 block">3. 年龄 *</label>
             <input
               type="text"
               value={formData.age}
               onChange={(e) => setFormData(prev => ({ ...prev, age: e.target.value }))}
-              className="w-full p-3 rounded-xl bg-slate-800/50 border border-slate-600 text-white focus:border-primary focus:outline-none"
+              className="input-field"
               placeholder="请输入年龄"
             />
           </div>
 
           <div>
-            <label className="text-slate-300 text-sm mb-2 block">4. 受教育程度 *</label>
+            <label className="text-white/80 text-sm mb-2 block">4. 受教育程度 *</label>
             <div className="space-y-2">
               {['初中及以下', '高中/中专', '大专', '本科', '硕士', '博士及以上'].map(opt => (
                 <button
@@ -204,7 +204,7 @@ export default function BasicInfoPage({ variant = 'info' }: { variant?: string }
           </div>
 
           <div>
-            <label className="text-slate-300 text-sm mb-2 block">5. 有无驾照 *</label>
+            <label className="text-white/80 text-sm mb-2 block">5. 有无驾照 *</label>
             <div className="flex gap-4">
               <button
                 onClick={() => setFormData(prev => ({ ...prev, hasLicense: '有' }))}
@@ -224,29 +224,29 @@ export default function BasicInfoPage({ variant = 'info' }: { variant?: string }
           {formData.hasLicense === '有' && (
             <>
               <div>
-                <label className="text-slate-300 text-sm mb-2 block">6. 驾龄（年） *</label>
+                <label className="text-white/80 text-sm mb-2 block">6. 驾龄（年） *</label>
                 <input
                   type="text"
                   value={formData.drivingYears}
                   onChange={(e) => setFormData(prev => ({ ...prev, drivingYears: e.target.value }))}
-                  className="w-full p-3 rounded-xl bg-slate-800/50 border border-slate-600 text-white focus:border-primary focus:outline-none"
+                  className="input-field"
                   placeholder="请输入驾龄"
                 />
               </div>
 
               <div>
-                <label className="text-slate-300 text-sm mb-2 block">7. 驾驶里程（km） *</label>
+                <label className="text-white/80 text-sm mb-2 block">7. 驾驶里程（km） *</label>
                 <input
                   type="text"
                   value={formData.drivingMileage}
                   onChange={(e) => setFormData(prev => ({ ...prev, drivingMileage: e.target.value }))}
-                  className="w-full p-3 rounded-xl bg-slate-800/50 border border-slate-600 text-white focus:border-primary focus:outline-none"
+                  className="input-field"
                   placeholder="请输入驾驶里程"
                 />
               </div>
 
               <div>
-                <label className="text-slate-300 text-sm mb-2 block">8. 有无辅助驾驶经验 *</label>
+                <label className="text-white/80 text-sm mb-2 block">8. 有无辅助驾驶经验 *</label>
                 <div className="flex gap-4">
                   <button
                     onClick={() => setFormData(prev => ({ ...prev, hasAssistDriving: '有' }))}
@@ -268,12 +268,12 @@ export default function BasicInfoPage({ variant = 'info' }: { variant?: string }
       </div>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-lg">
-          <p className="text-red-400 text-sm text-center">{error}</p>
+        <div className="mb-4 p-3 bg-red-500/20 border border-red-500/40 rounded-xl">
+          <p className="text-red-300 text-sm text-center">{error}</p>
         </div>
       )}
 
-      <button onClick={handleNext} className="btn-primary">
+      <button onClick={handleNext} className="btn-primary ripple">
         下一题
       </button>
     </div>
