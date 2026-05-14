@@ -18,24 +18,19 @@ const socialQuestions = [
 
 const educationOptions = ['初中及以下', '高中/中专', '大专', '本科', '硕士', '博士及以上'];
 
+// 果汁溅开效果
 const useRipple = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   
   const handleRipple = (e: React.MouseEvent<HTMLElement>) => {
-    const target = e.currentTarget;
-    const rect = target.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const x = e.clientX;
+    const y = e.clientY;
     
     const ripple = document.createElement('span');
     ripple.className = 'ripple-effect';
     ripple.style.left = `${x}px`;
     ripple.style.top = `${y}px`;
-    ripple.style.width = '60px';
-    ripple.style.height = '60px';
-    ripple.style.marginLeft = '-30px';
-    ripple.style.marginTop = '-30px';
-    target.appendChild(ripple);
+    document.body.appendChild(ripple);
     setTimeout(() => ripple.remove(), 600);
     
     const randomAngles = Array.from({ length: 6 }, (_, i) => (Math.PI * 2 / 6) * i + Math.random() * 0.5);
@@ -49,8 +44,9 @@ const useRipple = () => {
       particle.style.setProperty('--ty', `${Math.sin(angle) * distance}px`);
       particle.style.left = `${x}px`;
       particle.style.top = `${y}px`;
+      particle.style.position = 'fixed';
       particle.style.background = ['#f472b6', '#a78bfa', '#60a5fa', '#34d399'][i % 4];
-      target.appendChild(particle);
+      document.body.appendChild(particle);
       setTimeout(() => particle.remove(), 700);
     }
   };
@@ -163,7 +159,7 @@ export default function BasicInfoPage({ variant = 'info' }: { variant?: string }
                           }}
                           className={`num-option-compact ${socialAnswers[q.id] === val ? 'selected' : ''}`}
                         >
-                          {val}
+                          <span style={{ position: 'relative', zIndex: 2 }}>{val}</span>
                         </button>
                       ))}
                     </div>
@@ -308,7 +304,7 @@ export default function BasicInfoPage({ variant = 'info' }: { variant?: string }
           </div>
         </div>
 
-        {/* 驾照相关 */}
+        {/* 驾照相关 - 条件显示 */}
         {formData.hasLicense === '有' && (
           <>
             <div className="question-card">
