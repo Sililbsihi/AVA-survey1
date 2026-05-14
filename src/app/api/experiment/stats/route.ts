@@ -1,19 +1,52 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-export async function GET() {
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+export async function GET(request: Request) {
   try {
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      { auth: { autoRefreshToken: false, persistSession: false } }
-    );
-    const { count, error } = await supabase
+    const { searchParams } = new URL(request.url);
+    const password = searchParams.get('password');
+
+    if (password !== 'admin123') {
+      return NextResponse.json(
+        { success: false, error: '权限验证失败' },
+        { status: 401 }
+      );
+    }
+
+    const { count: total, error: countError } = await supabase
       .from('experiment_sessions')
       .select('*', { count: 'exact', head: true });
-    if (error) return NextResponse.json({ total: 0, error: error.message }, { status: 500 });
-    return NextResponse.json({ total: count || 0 });
-  } catch (err) {
-    return NextResponse.json({ total: 0, error: String(err) }, { status: 500 });
+
+    if (countError) {
+      console.error('统计查询错误:', countError);
+      return NextResponse.json(
+        { success: false, error: '统计获取失败' },
+        { status: 500 }
+      );
+    }
+
+    const today = new Date().toISOString().split('T')[0];
+    const { count: todayCount } = await supabase
+      .from('experiment_sessions')
+      .select('*', { count: 'exact', head: true })
+      .gte('submitted_at', `${today}T00:00:00`);
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        total: total || 0,
+        today: todayCount || 0
+      }
+    });
+  } catch (error) {
+    console.error('获取统计数据失败:', error);
+    return NextResponse.json(
+      { success: false, error: '服务器错误' },
+      { status: 500 }
+    );
   }
 }
