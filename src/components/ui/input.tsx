@@ -9,7 +9,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     return (
       <input
         type={type}
-        className={`flex h-12 w-full rounded-xl border border-slate-600 bg-slate-800/50 px-4 py-3 text-base text-slate-200 placeholder:text-slate-500 transition-all duration-200 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 ${className || ''}`}
+        className={`input-field ${className || ''}`}
         ref={ref}
         {...props}
       />
