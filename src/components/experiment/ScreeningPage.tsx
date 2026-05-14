@@ -68,25 +68,23 @@ export default function ScreeningPage() {
       <div className="glow-border bg-slate-800/80 backdrop-blur-sm rounded-2xl p-5 mb-6">
         <p className="text-lg text-center mb-8 leading-relaxed">{currentQ.text}</p>
 
-        <div className="flex justify-between gap-1 mb-2 px-1">
-          {scaleLabels.map((label) => (
-            <span key={label} className="text-xs text-slate-400 text-center flex-1">{label}</span>
-          ))}
-        </div>
-
-        <div className="flex justify-between gap-2 px-1">
-          {[1, 2, 3, 4, 5].map((value) => {
+        <div className="space-y-3">
+          {scaleLabels.map((label, index) => {
+            const value = index + 1;
             const isSelected = screening[currentQ.key as keyof typeof screening] === value;
             return (
               <button
                 key={value}
                 onClick={() => !isSubmitting && handleSelect(value)}
                 disabled={isSubmitting}
-                className={`w-12 h-12 rounded-full text-sm font-bold transition-all ${
-                  isSelected ? 'bg-primary text-white scale-110' : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700'
+                className={`w-full py-3.5 px-4 rounded-xl text-sm font-medium transition-all ${
+                  isSelected ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700'
                 } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
-                {value}
+                <span className="flex items-center justify-between">
+                  <span>{label}</span>
+                  {isSelected && <span>✓</span>}
+                </span>
               </button>
             );
           })}
