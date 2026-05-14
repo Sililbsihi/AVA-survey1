@@ -9,7 +9,7 @@ export default function InstructionPage() {
 
   const handleStart = () => {
     setIsSubmitting(true);
-    setTimeout(() => setStep(3), 300);
+    setTimeout(() => setStep(3 as any), 300);
   };
 
   return (
