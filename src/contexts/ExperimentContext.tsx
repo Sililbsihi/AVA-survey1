@@ -1,5 +1,5 @@
 'use client';
-
+import { Button } from "@/components/ui/button";
 import { createContext, useContext, useState, ReactNode } from 'react';
 import type { ExperimentData, ExperimentStep, ScreeningData, BasicInfoData, SocialInfluenceData, ScenarioData } from '@/types/experiment';
 
