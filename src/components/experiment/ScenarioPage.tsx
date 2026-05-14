@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useExperiment } from '@/contexts/ExperimentContext';
 
-type ViewMode = 'instruction' | 'scenario' | 'decision' | 'complete';
+type ViewMode = 'instruction' | 'scenario' | 'decision';
 
 interface ScenarioState {
   mode: ViewMode;
@@ -15,18 +15,8 @@ interface ScenarioState {
 }
 
 const SCENARIOS = [
-  {
-    id: 'low',
-    name: '低自动驾驶比例',
-    image: '/scenario-low.jpg',
-    description: '场景A：道路上自动驾驶汽车较少'
-  },
-  {
-    id: 'high',
-    name: '高自动驾驶比例',
-    image: '/scenario-high.jpg',
-    description: '场景B：道路上自动驾驶汽车较多'
-  }
+  { id: 'low', name: '低自动驾驶比例', image: '/scenario-low.jpg' },
+  { id: 'high', name: '高自动驾驶比例', image: '/scenario-high.jpg' }
 ];
 
 export default function ScenarioPage() {
@@ -40,12 +30,6 @@ export default function ScenarioPage() {
     manipulation: ''
   });
   const [error, setError] = useState('');
-
-  useEffect(() => {
-    const order = Math.random() < 0.5 ? ['low', 'high'] : ['high', 'low'];
-    const orderStr = order.join(',');
-    localStorage.setItem('scenarioOrder', orderStr);
-  }, []);
 
   const getCurrentScenario = () => {
     const orderStr = localStorage.getItem('scenarioOrder') || 'low,high';
@@ -102,16 +86,16 @@ export default function ScenarioPage() {
     if (state.mode === 'instruction') {
       const scenario = getCurrentScenario();
       return (
-        <div className="card-glow p-6 mb-6 text-center">
+        <div className="glass-card p-6 mb-6 text-center">
           <h3 className="text-xl font-bold text-white mb-4">
             情境 {state.currentScenarioIndex + 1}：{scenario.name}
           </h3>
-          <p className="text-slate-400 mb-6">
+          <p className="text-white/60 mb-6">
             请仔细阅读以下场景描述
           </p>
           <button 
             onClick={handleViewScenario}
-            className="btn-primary"
+            className="btn-primary ripple"
           >
             查看场景图片
           </button>
@@ -123,16 +107,17 @@ export default function ScenarioPage() {
       const scenario = getCurrentScenario();
       return (
         <div className="space-y-4">
-          <div className="card-glow p-4">
+          <div className="glass-card p-3 overflow-hidden">
             <img 
               src={scenario.image} 
               alt={scenario.name}
-              className="w-full rounded-lg"
+              className="w-full h-auto rounded-xl object-contain"
+              style={{ maxHeight: '60vh' }}
             />
           </div>
           <button 
             onClick={handleConfirmView}
-            className="btn-primary w-full"
+            className="btn-primary ripple"
           >
             我已阅读完毕，继续作答
           </button>
@@ -143,13 +128,13 @@ export default function ScenarioPage() {
     if (state.mode === 'decision') {
       return (
         <div className="space-y-6">
-          <div className="card-glow p-6">
+          <div className="glass-card p-6">
             <h3 className="text-lg font-bold text-white mb-4 text-center">
               情境 {state.currentScenarioIndex + 1} 问答
             </h3>
             
             <div className="mb-6">
-              <p className="text-slate-300 mb-4">
+              <p className="text-white/80 mb-4">
                 在该情境下，您是否愿意切换至自动驾驶模式？
               </p>
               <div className="flex gap-4 justify-center">
@@ -169,11 +154,11 @@ export default function ScenarioPage() {
             </div>
 
             <div className="mb-6">
-              <p className="text-slate-300 mb-4">
+              <p className="text-white/80 mb-4">
                 1. 在该情境下，你是否愿意使用自动驾驶汽车？
               </p>
               <div className="flex justify-between items-center gap-1">
-                <span className="text-slate-500 text-xs">完全不愿意</span>
+                <span className="text-white/40 text-xs">完全不愿意</span>
                 <div className="flex gap-2">
                   {[1, 2, 3, 4, 5].map(val => (
                     <button
@@ -185,16 +170,16 @@ export default function ScenarioPage() {
                     </button>
                   ))}
                 </div>
-                <span className="text-slate-500 text-xs">完全愿意</span>
+                <span className="text-white/40 text-xs">完全愿意</span>
               </div>
             </div>
 
             <div className="mb-6">
-              <p className="text-slate-300 mb-4">
+              <p className="text-white/80 mb-4">
                 2. 在该情境下，你是否愿意与其他人一起乘坐自动驾驶的公共交通？
               </p>
               <div className="flex justify-between items-center gap-1">
-                <span className="text-slate-500 text-xs">完全不愿意</span>
+                <span className="text-white/40 text-xs">完全不愿意</span>
                 <div className="flex gap-2">
                   {[1, 2, 3, 4, 5].map(val => (
                     <button
@@ -206,35 +191,34 @@ export default function ScenarioPage() {
                     </button>
                   ))}
                 </div>
-                <span className="text-slate-500 text-xs">完全愿意</span>
+                <span className="text-white/40 text-xs">完全愿意</span>
               </div>
             </div>
 
             <div className="mb-4">
-              <p className="text-slate-300 mb-4">
+              <p className="text-white/80 mb-4">
                 请回忆刚才图片中，道路上自动驾驶汽车的比例是多少？
               </p>
               <select
                 value={state.manipulation}
                 onChange={(e) => setState(prev => ({ ...prev, manipulation: e.target.value }))}
-                className="w-full p-3 rounded-lg bg-slate-700 border border-slate-600 text-white focus:border-primary focus:outline-none"
+                className="input-field"
               >
                 <option value="">请选择</option>
-                <option value="low">20%</option>
-                <option value="high">80%</option>
-                <option value="high">50%</option>
+                <option value="low">较少（约20%）</option>
+                <option value="high">较多（约80%）</option>
               </select>
             </div>
 
             {error && (
-              <p className="text-red-400 text-sm mb-4 text-center">{error}</p>
+              <p className="text-red-300 text-sm mb-4 text-center">{error}</p>
             )}
           </div>
 
           {isComplete && (
             <button 
               onClick={handleNextScenario}
-              className="btn-secondary w-full"
+              className="btn-primary ripple"
             >
               {state.currentScenarioIndex === 0 ? '进入下一个情境' : '完成实验'}
             </button>
@@ -250,8 +234,8 @@ export default function ScenarioPage() {
     <div className="mobile-container">
       <div className="nav-header sticky top-0 z-10 py-4 mb-6">
         <div className="flex items-center justify-between mb-3">
-          <span className="text-slate-400 text-sm">自动驾驶接受度研究</span>
-          <span className="text-primary font-medium text-sm">
+          <span className="text-white/60 text-sm">自动驾驶接受度研究</span>
+          <span className="text-blue-400 font-medium text-sm">
             情境 {state.currentScenarioIndex + 1}/2
           </span>
         </div>
