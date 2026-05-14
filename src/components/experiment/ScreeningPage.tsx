@@ -20,24 +20,20 @@ export default function ScreeningPage() {
   const [error, setError] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // 果汁溅开效果
   const handleRipple = (e: React.MouseEvent<HTMLElement>) => {
-    const target = e.currentTarget;
-    const rect = target.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const x = e.clientX;
+    const y = e.clientY;
     
+    // 创建涟漪 - 使用fixed定位+CSS居中
     const ripple = document.createElement('span');
     ripple.className = 'ripple-effect';
     ripple.style.left = `${x}px`;
     ripple.style.top = `${y}px`;
-    ripple.style.width = '60px';
-    ripple.style.height = '60px';
-    ripple.style.marginLeft = '-30px';
-    ripple.style.marginTop = '-30px';
-    
-    target.appendChild(ripple);
+    document.body.appendChild(ripple);
     setTimeout(() => ripple.remove(), 600);
     
+    // 创建粒子 - 使用fixed定位
     const randomAngles = Array.from({ length: 6 }, (_, i) => (Math.PI * 2 / 6) * i + Math.random() * 0.5);
     const randomDistances = Array.from({ length: 6 }, () => 20 + Math.random() * 15);
     for (let i = 0; i < 6; i++) {
@@ -49,8 +45,9 @@ export default function ScreeningPage() {
       particle.style.setProperty('--ty', `${Math.sin(angle) * distance}px`);
       particle.style.left = `${x}px`;
       particle.style.top = `${y}px`;
+      particle.style.position = 'fixed';
       particle.style.background = ['#f472b6', '#a78bfa', '#60a5fa', '#34d399'][i % 4];
-      target.appendChild(particle);
+      document.body.appendChild(particle);
       setTimeout(() => particle.remove(), 700);
     }
   };
@@ -95,8 +92,10 @@ export default function ScreeningPage() {
 
   return (
     <div className="mobile-container" ref={containerRef}>
+      {/* 星空背景 */}
       <div className="stars-bg" />
       
+      {/* 导航头部 */}
       <div className="nav-header">
         <div className="flex items-center justify-between mb-3">
           <span className="text-white/50 text-xs tracking-wide">自动驾驶接受度研究</span>
@@ -107,6 +106,7 @@ export default function ScreeningPage() {
         <Progress value={progress} />
       </div>
 
+      {/* 标题区 */}
       <div className="text-center pt-8 pb-6">
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-400/30 mb-4">
           <svg className="w-8 h-8 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -117,12 +117,14 @@ export default function ScreeningPage() {
         <p className="text-white/50 text-sm">请仔细阅读并回答以下问题</p>
       </div>
 
+      {/* 问题列表 */}
       <div className="flex-1 space-y-4">
         {questions.map((q, index) => (
           <div key={q.id} className="question-card">
             <span className="question-label">第 {index + 1} 题</span>
             <p className="question-text">{q.text}</p>
             
+            {/* 选项区域 */}
             <div className="flex items-center justify-between gap-1">
               <span className="text-white/40 text-xs whitespace-nowrap">很不同意</span>
               <div className="flex gap-1.5">
@@ -134,9 +136,9 @@ export default function ScreeningPage() {
                       handleRipple(e);
                       handleSelect(q.id, val);
                     }}
-                    className={`num-option ripple-effect ${answers[q.id] === val ? 'selected' : ''}`}
+                    className={`num-option ${answers[q.id] === val ? 'selected' : ''}`}
                   >
-                    {val}
+                    <span style={{ position: 'relative', zIndex: 2 }}>{val}</span>
                   </button>
                 ))}
               </div>
@@ -146,10 +148,12 @@ export default function ScreeningPage() {
         ))}
       </div>
 
+      {/* 错误提示 */}
       {error && (
         <div className="error-text">{error}</div>
       )}
 
+      {/* 提交按钮 */}
       <div className="pt-4 pb-8">
         <button 
           onClick={(e) => {
