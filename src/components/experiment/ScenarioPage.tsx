@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useExperiment } from '@/contexts/ExperimentContext';
 
-type ViewMode = 'instruction' | 'scenario' | 'decision';
+type ViewMode = 'scenario' | 'decision' | 'complete';
 
 interface ScenarioState {
   mode: ViewMode;
@@ -15,24 +15,15 @@ interface ScenarioState {
 }
 
 const SCENARIOS = [
-  {
-    id: 'low',
-    name: '低自动驾驶比例场景',
-    image: '/scenario-low.jpg',
-    description: '道路上的自动驾驶汽车较少'
-  },
-  {
-    id: 'high',
-    name: '高自动驾驶比例场景',
-    image: '/scenario-high.jpg',
-    description: '道路上的自动驾驶汽车较多'
-  }
+  { id: 'low', image: '/scenario-low.jpg' },
+  { id: 'high', image: '/scenario-high.jpg' }
 ];
 
 export default function ScenarioPage() {
   const { setStep } = useExperiment();
+  const containerRef = useRef<HTMLDivElement>(null);
   const [state, setState] = useState<ScenarioState>({
-    mode: 'instruction',
+    mode: 'scenario',
     currentScenarioIndex: 0,
     decision: null,
     acceptance1: null,
@@ -47,6 +38,41 @@ export default function ScenarioPage() {
     localStorage.setItem('scenarioOrder', orderStr);
   }, []);
 
+  const handleRipple = (e: React.MouseEvent<HTMLElement>) => {
+    const target = e.currentTarget;
+    const rect = target.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    const ripple = document.createElement('span');
+    ripple.className = 'ripple-effect';
+    ripple.style.left = `${x}px`;
+    ripple.style.top = `${y}px`;
+    ripple.style.width = '60px';
+    ripple.style.height = '60px';
+    ripple.style.marginLeft = '-30px';
+    ripple.style.marginTop = '-30px';
+    target.appendChild(ripple);
+    setTimeout(() => ripple.remove(), 600);
+    
+    const randomAngles = Array.from({ length: 6 }, (_, i) => (Math.PI * 2 / 6) * i + Math.random() * 0.5);
+    const randomDistances = Array.from({ length: 6 }, () => 20 + Math.random() * 15);
+    
+    for (let i = 0; i < 6; i++) {
+      const particle = document.createElement('span');
+      particle.className = 'particle';
+      const angle = randomAngles[i];
+      const distance = randomDistances[i];
+      particle.style.setProperty('--tx', `${Math.cos(angle) * distance}px`);
+      particle.style.setProperty('--ty', `${Math.sin(angle) * distance}px`);
+      particle.style.left = `${x}px`;
+      particle.style.top = `${y}px`;
+      particle.style.background = ['#f472b6', '#a78bfa', '#60a5fa', '#34d399'][i % 4];
+      target.appendChild(particle);
+      setTimeout(() => particle.remove(), 700);
+    }
+  };
+
   const getCurrentScenario = () => {
     const orderStr = localStorage.getItem('scenarioOrder') || 'low,high';
     const order = orderStr.split(',');
@@ -54,15 +80,19 @@ export default function ScenarioPage() {
     return SCENARIOS.find(s => s.id === scenarioId) || SCENARIOS[0];
   };
 
-  const handleViewScenario = () => {
-    setState(prev => ({ ...prev, mode: 'scenario' }));
-  };
-
   const handleConfirmView = () => {
     setState(prev => ({ ...prev, mode: 'decision' }));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleNextScenario = () => {
+    if (state.decision === null || state.acceptance1 === null || state.acceptance2 === null || state.manipulation === '') {
+      setError('请回答所有问题');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+    setError('');
+
     if (state.currentScenarioIndex === 0) {
       const scenario = getCurrentScenario();
       const scenarioA = {
@@ -76,13 +106,14 @@ export default function ScenarioPage() {
       
       setState(prev => ({
         ...prev,
-        mode: 'instruction',
+        mode: 'scenario',
         currentScenarioIndex: 1,
         decision: null,
         acceptance1: null,
         acceptance2: null,
         manipulation: ''
       }));
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
       const scenario = getCurrentScenario();
       const scenarioB = {
@@ -97,185 +128,156 @@ export default function ScenarioPage() {
     }
   };
 
-  const isComplete = state.decision !== null && state.acceptance1 !== null && 
-                     state.acceptance2 !== null && state.manipulation !== '';
-
-  const renderContent = () => {
-    if (state.mode === 'instruction') {
-      const scenario = getCurrentScenario();
-      return (
-        <div className="card-glass p-6 mb-6 text-center">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-blue-500/20 border border-blue-500/30 flex items-center justify-center">
-            <span className="text-2xl font-bold text-glow">{state.currentScenarioIndex + 1}</span>
+  if (state.mode === 'scenario') {
+    const scenario = getCurrentScenario();
+    return (
+      <div className="mobile-container" ref={containerRef}>
+        <div className="stars-bg" />
+        
+        <div className="flex-1 flex flex-col min-h-screen py-4">
+          <div className="flex-1 flex items-center justify-center px-2">
+            <div className="w-full h-full max-h-[75vh]">
+              <img 
+                src={scenario.image} 
+                alt="驾驶场景"
+                className="w-full h-full object-contain rounded-xl"
+              />
+            </div>
           </div>
-          <h3 className="text-xl font-bold text-white mb-3">
-            {scenario.name}
-          </h3>
-          <p className="text-white/60 mb-8">
-            请仔细阅读以下场景描述
-          </p>
-          <button 
-            onClick={handleViewScenario}
-            className="btn-primary ripple"
-          >
-            查看场景图片
-          </button>
-        </div>
-      );
-    }
-
-    if (state.mode === 'scenario') {
-      const scenario = getCurrentScenario();
-      return (
-        <div className="space-y-4">
-          <div className="card-glass p-3 overflow-hidden">
-            <img 
-              src={scenario.image} 
-              alt={scenario.name}
-              className="w-full h-auto rounded-xl object-contain"
-              style={{ maxHeight: '60vh' }}
-            />
-          </div>
-          <button 
-            onClick={handleConfirmView}
-            className="btn-primary ripple"
-          >
-            我已阅读完毕，继续作答
-          </button>
-        </div>
-      );
-    }
-
-    if (state.mode === 'decision') {
-      return (
-        <div className="space-y-6">
-          <div className="card-glass p-6">
-            <h3 className="text-lg font-bold text-white mb-6 text-center">
-              情境 {state.currentScenarioIndex + 1} 问答
-            </h3>
-            
-            <div className="mb-6">
-              <p className="text-white/80 mb-4">
-                在该情境下，您是否愿意切换至自动驾驶模式？
-              </p>
-              <div className="flex gap-4 justify-center">
-                <button
-                  onClick={() => { setState(prev => ({ ...prev, decision: 'yes' })); setError(''); }}
-                  className={`option-btn ${state.decision === 'yes' ? 'selected' : ''}`}
-                >
-                  是
-                </button>
-                <button
-                  onClick={() => { setState(prev => ({ ...prev, decision: 'no' })); setError(''); }}
-                  className={`option-btn ${state.decision === 'no' ? 'selected' : ''}`}
-                >
-                  否
-                </button>
-              </div>
-            </div>
-
-            <div className="mb-6">
-              <p className="text-white/80 mb-4">
-                1. 在该情境下，你是否愿意使用自动驾驶汽车？
-              </p>
-              <div className="flex justify-between items-center gap-1">
-                <span className="text-white/40 text-xs">完全不愿意</span>
-                <div className="flex gap-2">
-                  {[1, 2, 3, 4, 5].map(val => (
-                    <button
-                      key={val}
-                      onClick={() => setState(prev => ({ ...prev, acceptance1: val }))}
-                      className={`num-btn ${state.acceptance1 === val ? 'selected' : ''}`}
-                    >
-                      {val}
-                    </button>
-                  ))}
-                </div>
-                <span className="text-white/40 text-xs">完全愿意</span>
-              </div>
-            </div>
-
-            <div className="mb-6">
-              <p className="text-white/80 mb-4">
-                2. 在该情境下，你是否愿意与其他人一起乘坐自动驾驶的公共交通？
-              </p>
-              <div className="flex justify-between items-center gap-1">
-                <span className="text-white/40 text-xs">完全不愿意</span>
-                <div className="flex gap-2">
-                  {[1, 2, 3, 4, 5].map(val => (
-                    <button
-                      key={val}
-                      onClick={() => setState(prev => ({ ...prev, acceptance2: val }))}
-                      className={`num-btn ${state.acceptance2 === val ? 'selected' : ''}`}
-                    >
-                      {val}
-                    </button>
-                  ))}
-                </div>
-                <span className="text-white/40 text-xs">完全愿意</span>
-              </div>
-            </div>
-
-            <div className="mb-4">
-              <p className="text-white/80 mb-4">
-                请回忆刚才图片中，道路上自动驾驶汽车的比例是多少？
-              </p>
-              <select
-                value={state.manipulation}
-                onChange={(e) => setState(prev => ({ ...prev, manipulation: e.target.value }))}
-                className="select-glow"
-              >
-                <option value="">请选择</option>
-                <option value="10">10%</option>
-                <option value="20">20%</option>
-                <option value="60">60%</option>
-                <option value="80">80%</option>
-                <option value="90">90%</option>
-              </select>
-            </div>
-
-            {error && (
-              <p className="text-red-400 text-sm text-center mt-4">{error}</p>
-            )}
-          </div>
-
-          {isComplete && (
+          
+          <div className="flex-shrink-0 pt-4 pb-6 px-2">
             <button 
-              onClick={handleNextScenario}
-              className="btn-primary ripple"
+              onClick={(e) => { handleRipple(e); handleConfirmView(); }}
+              className="btn-glow w-full ripple-container"
             >
-              {state.currentScenarioIndex === 0 ? '进入下一个情境' : '完成实验'}
+              <span>我已阅读完毕</span>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
             </button>
-          )}
+          </div>
         </div>
-      );
-    }
-
-    return null;
-  };
+      </div>
+    );
+  }
 
   return (
-    <div className="mobile-container">
-      <div className="nav-header sticky top-0 z-10 py-4 mb-6">
+    <div className="mobile-container" ref={containerRef}>
+      <div className="stars-bg" />
+      
+      <div className="nav-header">
         <div className="flex items-center justify-between mb-3">
-          <span className="text-white/60 text-sm">自动驾驶接受度研究</span>
-          <span className="text-blue-400 font-medium text-sm">
+          <span className="text-white/50 text-xs tracking-wide">自动驾驶接受度研究</span>
+          <span className="text-xs font-medium px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-400/30">
             情境 {state.currentScenarioIndex + 1}/2
           </span>
         </div>
         <div className="progress-bar">
-          <div 
-            className="progress-fill" 
-            style={{ width: `${((state.currentScenarioIndex + 1) / 2) * 100}%` }} 
-          />
+          <div className="progress-fill" style={{ width: `${((state.currentScenarioIndex + 1) / 2) * 100}%` }} />
         </div>
       </div>
 
-      <div className="mb-4">
-        <span className="tag">情境实验</span>
+      <div className="flex-1 space-y-4">
+        <div className="question-card">
+          <span className="question-label">行为决策</span>
+          <p className="question-text">
+            在该情境下，您是否愿意切换至自动驾驶模式？
+          </p>
+          <div className="flex gap-4 justify-center">
+            <button
+              onClick={(e) => { e.stopPropagation(); handleRipple(e); setState(prev => ({ ...prev, decision: 'yes' })); setError(''); }}
+              className={`option-btn flex-1 max-w-[140px] ${state.decision === 'yes' ? 'selected' : ''}`}
+            >
+              <svg className="w-5 h-5 mr-2 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              是
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); handleRipple(e); setState(prev => ({ ...prev, decision: 'no' })); setError(''); }}
+              className={`option-btn flex-1 max-w-[140px] ${state.decision === 'no' ? 'selected' : ''}`}
+            >
+              <svg className="w-5 h-5 mr-2 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              否
+            </button>
+          </div>
+        </div>
+
+        <div className="question-card">
+          <span className="question-label">接受度评分</span>
+          <p className="question-text">
+            在该情境下，你是否愿意使用自动驾驶汽车？
+          </p>
+          <div className="flex items-center justify-between gap-1">
+            <span className="text-white/40 text-xs">完全不愿意</span>
+            <div className="flex gap-1.5">
+              {[1, 2, 3, 4, 5].map(val => (
+                <button
+                  key={val}
+                  onClick={(e) => { e.stopPropagation(); handleRipple(e); setState(prev => ({ ...prev, acceptance1: val })); }}
+                  className={`num-option ripple-effect ${state.acceptance1 === val ? 'selected' : ''}`}
+                >
+                  {val}
+                </button>
+              ))}
+            </div>
+            <span className="text-white/40 text-xs">完全愿意</span>
+          </div>
+        </div>
+
+        <div className="question-card">
+          <span className="question-label">接受度评分</span>
+          <p className="question-text">
+            在该情境下，你是否愿意与其他人一起乘坐自动驾驶的公共交通？
+          </p>
+          <div className="flex items-center justify-between gap-1">
+            <span className="text-white/40 text-xs">完全不愿意</span>
+            <div className="flex gap-1.5">
+              {[1, 2, 3, 4, 5].map(val => (
+                <button
+                  key={val}
+                  onClick={(e) => { e.stopPropagation(); handleRipple(e); setState(prev => ({ ...prev, acceptance2: val })); }}
+                  className={`num-option ripple-effect ${state.acceptance2 === val ? 'selected' : ''}`}
+                >
+                  {val}
+                </button>
+              ))}
+            </div>
+            <span className="text-white/40 text-xs">完全愿意</span>
+          </div>
+        </div>
+
+        <div className="question-card">
+          <span className="question-label">操纵检验</span>
+          <p className="question-text">
+            请回忆刚才图片中，道路上自动驾驶汽车的比例是多少？
+          </p>
+          <div className="grid grid-cols-5 gap-2 mt-3">
+            {['10%', '20%', '60%', '80%', '90%'].map(val => (
+              <button
+                key={val}
+                onClick={(e) => { e.stopPropagation(); handleRipple(e); setState(prev => ({ ...prev, manipulation: val.replace('%', '') })); setError(''); }}
+                className={`num-option-compact py-3 ${state.manipulation === val.replace('%', '') ? 'selected' : ''}`}
+              >
+                {val}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {error && <div className="error-text">{error}</div>}
       </div>
 
-      {renderContent()}
+      <div className="pt-4 pb-8">
+        <button onClick={(e) => { handleRipple(e); handleNextScenario(); }} className="btn-glow ripple-container">
+          <span>{state.currentScenarioIndex === 0 ? '进入下一情境' : '完成实验'}</span>
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+          </svg>
+        </button>
+      </div>
     </div>
   );
 }
