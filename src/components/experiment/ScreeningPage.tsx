@@ -16,98 +16,78 @@ const questions = [
 const scaleLabels = ['很不同意', '不同意', '中立', '同意', '很同意'];
 
 export default function ScreeningPage() {
-  const { setStep } = useExperiment();
-  const [currentIdx, setCurrentIdx] = useState(0);
-  const [answers, setAnswers] = useState<number[]>([]);
+  const { setStep, experimentData, updateScreening } = useExperiment();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleAnswer = (value: number) => {
-    const newAnswers = [...answers, value];
-    
-    if (currentIdx < questions.length - 1) {
-      setAnswers(newAnswers);
-      setCurrentIdx(currentIdx + 1);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+  const screening = experimentData.screening;
+  const currentQ = questions[currentQuestion];
+
+  const handleSelect = (value: number) => {
+    updateScreening({ [currentQ.key]: value });
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(currentQuestion + 1);
+        window.scrollTo(0, 0);
+      }, 150);
     } else {
-      // --- 严格筛选逻辑 ---
-      const q = newAnswers;
-      // 注意：数组索引 0=q1, 1=q2, 2=q3, 3=q4, 4=q5, 5=q6, 6=q7
-      
-      const avgA = (q[0] + q[1]) / 2; // q1, q2
-      const avgB = (q[2] + q[3]) / 2; // q3, q4
-      const avgC = (q[5] + q[6]) / 2; // q6, q7
-      
-      // 注意力题 q5 必须选 "很不同意" (对应数值 1)
-      const attentionCheckPassed = q[4] === 1;
-
-      const isQualified = 
-        avgA >= 2 && avgA <= 4 &&
-        avgB >= 2 && avgB <= 4 &&
-        avgC >= 2 && avgC <= 4 &&
-        attentionCheckPassed;
-
-      if (isQualified) {
-        (setStep as any)('instruction');
-      } else {
-        // 静默拦截
-        alert("感谢您的参与！目前该样本组名额已满。");
-      }
+      setTimeout(checkEligibility, 300);
     }
   };
 
-  const progress = ((currentIdx + 1) / questions.length) * 100;
+  const checkEligibility = () => {
+    const g1 = (screening.q1 ?? 0) + (screening.q2 ?? 0) + (screening.q3 ?? 0) + (screening.q4 ?? 0);
+    const g2 = (screening.q6 ?? 0) + (screening.q7 ?? 0);
+    const pass = g1 >= 8 && g1 <= 20 && g2 >= 4 && g2 <= 12 && screening.q5 === 1;
+    setIsSubmitting(true);
+    setTimeout(() => {
+      setStep(pass ? 'basic-info' : 'disqualified');
+      window.scrollTo(0, 0);
+    }, 300);
+  };
+
+  const progress = ((currentQuestion + 1) / questions.length) * 100;
 
   return (
-    <div className="min-h-screen bg-[#0f172a] text-slate-200 px-6 py-12 flex flex-col items-center">
-      {/* 顶部进度条 */}
-      <div className="w-full max-w-md mb-12">
-        <div className="flex justify-between items-end mb-3">
-          <span className="text-blue-400 font-mono text-[10px] tracking-[0.2em] uppercase">Experiment Screening</span>
-          <span className="text-slate-500 font-mono text-xs">{currentIdx + 1} / {questions.length}</span>
+    <div className="mobile-container">
+      <div className="text-center mb-4">
+        <h1 className="text-xl font-bold text-white mb-2">筛选问卷</h1>
+        <p className="text-sm text-slate-400">请根据您的真实想法作答</p>
+      </div>
+
+      <div className="mb-4">
+        <div className="flex justify-between text-xs text-slate-400 mb-1">
+          <span>第 {currentQuestion + 1} / {questions.length} 题</span>
         </div>
-        <div className="h-1.5 w-full bg-slate-800/50 rounded-full overflow-hidden p-[1px]">
-          <div 
-            className="h-full bg-gradient-to-r from-blue-500 to-cyan-400 transition-all duration-500 rounded-full shadow-[0_0_10px_rgba(59,130,246,0.4)]"
-            style={{ width: `${progress}%` }}
-          />
+        <div className="w-full bg-slate-700 rounded-full h-1.5">
+          <div className="bg-primary h-1.5 rounded-full transition-all" style={{ width: `${progress}%` }} />
         </div>
       </div>
 
-      {/* 题目卡片 */}
-      <div className="w-full max-w-md">
-        <div className="bg-slate-900/80 border border-slate-800 backdrop-blur-xl rounded-[2rem] p-10 shadow-2xl relative overflow-hidden">
-          {/* 背景装饰球 */}
-          <div className="absolute -top-24 -right-24 w-48 h-48 bg-blue-600/10 rounded-full blur-3xl"></div>
-          
-          <div className="relative z-10">
-             <div className="min-h-[120px] mb-8 flex items-center justify-center">
-                <h2 className="text-2xl font-bold text-white text-center leading-snug tracking-tight">
-                  {questions[currentIdx].text}
-                </h2>
-             </div>
+      <div className="glow-border bg-slate-800/80 backdrop-blur-sm rounded-2xl p-5 mb-6">
+        <p className="text-lg text-center mb-8 leading-relaxed">{currentQ.text}</p>
 
-            <div className="space-y-4">
-              {[1, 2, 3, 4, 5].map((value) => (
-                <button
-                  key={value}
-                  onClick={() => handleAnswer(value)}
-                  className="w-full group relative flex items-center p-5 rounded-2xl bg-slate-800/30 border border-slate-700/50 hover:border-blue-500/50 hover:bg-blue-600/5 transition-all duration-300 active:scale-[0.97]"
-                >
-                  <div className="w-5 h-5 rounded-full border-2 border-slate-600 group-hover:border-blue-500 flex items-center justify-center mr-4 transition-all">
-                    <div className="w-2.5 h-2.5 rounded-full bg-blue-500 scale-0 group-active:scale-100 transition-transform" />
-                  </div>
-                  <span className="text-slate-400 group-hover:text-blue-100 font-medium transition-colors">
-                    {scaleLabels[value - 1]}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
+        <div className="space-y-3">
+          {scaleLabels.map((label, index) => {
+            const value = index + 1;
+            const isSelected = screening[currentQ.key as keyof typeof screening] === value;
+            return (
+              <button
+                key={value}
+                onClick={() => !isSubmitting && handleSelect(value)}
+                disabled={isSubmitting}
+                className={`w-full py-3.5 px-4 rounded-xl text-sm font-medium transition-all ${
+                  isSelected ? 'bg-primary text-white shadow-lg' : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700'
+                } disabled:opacity-50 disabled:cursor-not-allowed`}
+              >
+                <span className="flex items-center justify-between">
+                  <span>{label}</span>
+                  {isSelected && <span>✓</span>}
+                </span>
+              </button>
+            );
+          })}
         </div>
-        
-        {/* 底部小字说明 */}
-        <p className="mt-8 text-center text-slate-600 text-xs font-light tracking-widest uppercase">
-          Autonomous Driving Acceptability Study
-        </p>
       </div>
     </div>
   );
