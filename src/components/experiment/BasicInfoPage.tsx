@@ -75,14 +75,12 @@ export default function BasicInfoPage() {
         <div className="text-center mb-4">
           <h1 className="text-xl font-bold text-white mb-2">基本信息</h1>
         </div>
-
         <div className="glow-border bg-slate-800/80 backdrop-blur-sm rounded-2xl p-5 mb-6">
           <div className="space-y-5">
             <div>
               <label className="block text-sm font-medium text-slate-200 mb-2">真实姓名 <span className="text-red-400">*</span></label>
               <Input placeholder="请输入" value={basicInfo.name} onChange={e => updateBasicInfo({ name: e.target.value })} className="bg-slate-700/50 border-slate-600" />
             </div>
-
             <div>
               <label className="block text-sm font-medium text-slate-200 mb-2">性别 <span className="text-red-400">*</span></label>
               <div className="flex gap-3">
@@ -91,17 +89,14 @@ export default function BasicInfoPage() {
                 ))}
               </div>
             </div>
-
             <div>
               <label className="block text-sm font-medium text-slate-200 mb-2">年龄 <span className="text-red-400">*</span></label>
               <Input type="number" placeholder="请输入" value={basicInfo.age ?? ''} onChange={e => updateBasicInfo({ age: e.target.value ? parseInt(e.target.value) : null })} className="bg-slate-700/50 border-slate-600" />
             </div>
-
             <div>
               <label className="block text-sm font-medium text-slate-200 mb-2">手机号 <span className="text-red-400">*</span></label>
               <Input placeholder="请输入" value={basicInfo.phone} onChange={e => updateBasicInfo({ phone: e.target.value })} className="bg-slate-700/50 border-slate-600" />
             </div>
-
             <div>
               <label className="block text-sm font-medium text-slate-200 mb-2">受教育程度 <span className="text-red-400">*</span></label>
               <div className="grid grid-cols-2 gap-2">
@@ -110,7 +105,6 @@ export default function BasicInfoPage() {
                 ))}
               </div>
             </div>
-
             <div>
               <label className="block text-sm font-medium text-slate-200 mb-2">是否持有驾照 <span className="text-red-400">*</span></label>
               <div className="flex gap-3">
@@ -119,7 +113,6 @@ export default function BasicInfoPage() {
                 ))}
               </div>
             </div>
-
             {basicInfo.hasDriverLicense === 'yes' && (
               <div className="space-y-4 bg-slate-700/30 rounded-xl p-4">
                 <div>
@@ -132,7 +125,6 @@ export default function BasicInfoPage() {
                 </div>
               </div>
             )}
-
             <div>
               <label className="block text-sm font-medium text-slate-200 mb-2">有无辅助驾驶经验 <span className="text-red-400">*</span></label>
               <div className="flex gap-3">
@@ -142,7 +134,6 @@ export default function BasicInfoPage() {
               </div>
             </div>
           </div>
-
           {basicError && <p className="text-red-400 text-sm text-center mt-4">{basicError}</p>}
           <Button onClick={handleBasicNext} disabled={isSubmitting} className="w-full mt-6 bg-primary hover:bg-primary/90">{isSubmitting ? '提交中...' : '下一页'}</Button>
         </div>
@@ -159,7 +150,6 @@ export default function BasicInfoPage() {
         <h1 className="text-xl font-bold text-white mb-2">第一部分</h1>
         <p className="text-sm text-slate-400">请根据您的真实想法作答</p>
       </div>
-
       <div className="mb-4">
         <div className="flex justify-between text-xs text-slate-400 mb-1">
           <span>第 {currentSocial + 1} / {socialQuestions.length} 题</span>
@@ -168,8 +158,23 @@ export default function BasicInfoPage() {
           <div className="bg-primary h-1.5 rounded-full" style={{ width: `${progress}%` }} />
         </div>
       </div>
-
       <div className="glow-border bg-slate-800/80 backdrop-blur-sm rounded-2xl p-5 mb-6">
         <p className="text-lg text-center mb-8 leading-relaxed">{currentQ.text}</p>
-
         <div className="space-y-3">
+          {['很不同意', '不同意', '中立', '同意', '很同意'].map((label, index) => {
+            const value = index + 1;
+            const isSelected = socialInfluence[currentQ.key as keyof typeof socialInfluence] === value;
+            return (
+              <button key={value} onClick={() => !isSubmitting && handleSocialSelect(currentQ.key, value)} className={`w-full py-3.5 px-4 rounded-xl text-sm font-medium transition-all ${isSelected ? 'bg-primary text-white' : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700'}`}>
+                <span className="flex items-center justify-between"><span>{label}</span>{isSelected && <span>✓</span>}</span>
+              </button>
+            );
+          })}
+        </div>
+        {socialError && <p className="text-red-400 text-sm text-center mt-4">{socialError}</p>}
+        <Button onClick={handleSocialNext} disabled={isSubmitting} className="w-full mt-6 bg-primary hover:bg-primary/90">下一页</Button>
+        <button onClick={handleSocialPrev} className="w-full mt-3 py-2 text-sm text-slate-400 hover:text-white">返回上一页</button>
+      </div>
+    </div>
+  );
+}
