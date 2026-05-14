@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useExperiment } from '@/contexts/ExperimentContext';
 
 type ViewMode = 'instruction' | 'scenario' | 'decision';
@@ -15,8 +15,18 @@ interface ScenarioState {
 }
 
 const SCENARIOS = [
-  { id: 'low', name: '低自动驾驶比例', image: '/scenario-low.jpg' },
-  { id: 'high', name: '高自动驾驶比例', image: '/scenario-high.jpg' }
+  {
+    id: 'low',
+    name: '低自动驾驶比例场景',
+    image: '/scenario-low.jpg',
+    description: '道路上的自动驾驶汽车较少'
+  },
+  {
+    id: 'high',
+    name: '高自动驾驶比例场景',
+    image: '/scenario-high.jpg',
+    description: '道路上的自动驾驶汽车较多'
+  }
 ];
 
 export default function ScenarioPage() {
@@ -30,6 +40,12 @@ export default function ScenarioPage() {
     manipulation: ''
   });
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    const order = Math.random() < 0.5 ? ['low', 'high'] : ['high', 'low'];
+    const orderStr = order.join(',');
+    localStorage.setItem('scenarioOrder', orderStr);
+  }, []);
 
   const getCurrentScenario = () => {
     const orderStr = localStorage.getItem('scenarioOrder') || 'low,high';
@@ -48,8 +64,9 @@ export default function ScenarioPage() {
 
   const handleNextScenario = () => {
     if (state.currentScenarioIndex === 0) {
+      const scenario = getCurrentScenario();
       const scenarioA = {
-        type: getCurrentScenario().id,
+        type: scenario.id,
         decision: state.decision,
         acceptance1: state.acceptance1,
         acceptance2: state.acceptance2,
@@ -67,8 +84,9 @@ export default function ScenarioPage() {
         manipulation: ''
       }));
     } else {
+      const scenario = getCurrentScenario();
       const scenarioB = {
-        type: getCurrentScenario().id,
+        type: scenario.id,
         decision: state.decision,
         acceptance1: state.acceptance1,
         acceptance2: state.acceptance2,
@@ -86,11 +104,14 @@ export default function ScenarioPage() {
     if (state.mode === 'instruction') {
       const scenario = getCurrentScenario();
       return (
-        <div className="glass-card p-6 mb-6 text-center">
-          <h3 className="text-xl font-bold text-white mb-4">
-            情境 {state.currentScenarioIndex + 1}：{scenario.name}
+        <div className="card-glass p-6 mb-6 text-center">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-blue-500/20 border border-blue-500/30 flex items-center justify-center">
+            <span className="text-2xl font-bold text-glow">{state.currentScenarioIndex + 1}</span>
+          </div>
+          <h3 className="text-xl font-bold text-white mb-3">
+            {scenario.name}
           </h3>
-          <p className="text-white/60 mb-6">
+          <p className="text-white/60 mb-8">
             请仔细阅读以下场景描述
           </p>
           <button 
@@ -107,7 +128,7 @@ export default function ScenarioPage() {
       const scenario = getCurrentScenario();
       return (
         <div className="space-y-4">
-          <div className="glass-card p-3 overflow-hidden">
+          <div className="card-glass p-3 overflow-hidden">
             <img 
               src={scenario.image} 
               alt={scenario.name}
@@ -128,8 +149,8 @@ export default function ScenarioPage() {
     if (state.mode === 'decision') {
       return (
         <div className="space-y-6">
-          <div className="glass-card p-6">
-            <h3 className="text-lg font-bold text-white mb-4 text-center">
+          <div className="card-glass p-6">
+            <h3 className="text-lg font-bold text-white mb-6 text-center">
               情境 {state.currentScenarioIndex + 1} 问答
             </h3>
             
@@ -202,16 +223,19 @@ export default function ScenarioPage() {
               <select
                 value={state.manipulation}
                 onChange={(e) => setState(prev => ({ ...prev, manipulation: e.target.value }))}
-                className="input-field"
+                className="select-glow"
               >
                 <option value="">请选择</option>
-                <option value="low">较少（约20%）</option>
-                <option value="high">较多（约80%）</option>
+                <option value="10">10%</option>
+                <option value="20">20%</option>
+                <option value="60">60%</option>
+                <option value="80">80%</option>
+                <option value="90">90%</option>
               </select>
             </div>
 
             {error && (
-              <p className="text-red-300 text-sm mb-4 text-center">{error}</p>
+              <p className="text-red-400 text-sm text-center mt-4">{error}</p>
             )}
           </div>
 
