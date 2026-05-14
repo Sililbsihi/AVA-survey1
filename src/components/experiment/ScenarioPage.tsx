@@ -39,20 +39,15 @@ export default function ScenarioPage() {
   }, []);
 
   const handleRipple = (e: React.MouseEvent<HTMLElement>) => {
-    const target = e.currentTarget;
-    const rect = target.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const x = e.clientX;
+    const y = e.clientY;
     
+    // 涟漪效果 - 使用fixed定位+CSS居中
     const ripple = document.createElement('span');
     ripple.className = 'ripple-effect';
     ripple.style.left = `${x}px`;
     ripple.style.top = `${y}px`;
-    ripple.style.width = '60px';
-    ripple.style.height = '60px';
-    ripple.style.marginLeft = '-30px';
-    ripple.style.marginTop = '-30px';
-    target.appendChild(ripple);
+    document.body.appendChild(ripple);
     setTimeout(() => ripple.remove(), 600);
     
     const randomAngles = Array.from({ length: 6 }, (_, i) => (Math.PI * 2 / 6) * i + Math.random() * 0.5);
@@ -61,6 +56,7 @@ export default function ScenarioPage() {
     for (let i = 0; i < 6; i++) {
       const particle = document.createElement('span');
       particle.className = 'particle';
+      particle.style.position = 'fixed';
       const angle = randomAngles[i];
       const distance = randomDistances[i];
       particle.style.setProperty('--tx', `${Math.cos(angle) * distance}px`);
@@ -68,7 +64,8 @@ export default function ScenarioPage() {
       particle.style.left = `${x}px`;
       particle.style.top = `${y}px`;
       particle.style.background = ['#f472b6', '#a78bfa', '#60a5fa', '#34d399'][i % 4];
-      target.appendChild(particle);
+      particle.style.zIndex = '9999';
+      document.body.appendChild(particle);
       setTimeout(() => particle.remove(), 700);
     }
   };
@@ -135,31 +132,26 @@ export default function ScenarioPage() {
       <div className="mobile-container" ref={containerRef}>
         <div className="stars-bg" />
         
-        <div className="flex-1 flex flex-col py-4">
-          {/* 图片最大化显示 - 确保不被遮挡 */}
-          <div className="flex-1 flex items-center justify-center px-2 py-2 overflow-hidden">
-            <div className="w-full" style={{ maxHeight: 'calc(100vh - 200px)' }}>
-              <img 
-                src={scenario.image} 
-                alt="驾驶场景"
-                className="w-full h-full object-contain rounded-xl"
-                style={{ maxHeight: 'calc(100vh - 220px)' }}
-              />
-            </div>
-          </div>
-          
-          {/* 确认按钮 - 固定在底部，有足够空间 */}
-          <div className="flex-shrink-0 pt-4 pb-2 px-2">
-            <button 
-              onClick={(e) => { handleRipple(e); handleConfirmView(); }}
-              className="btn-glow w-full"
-            >
-              <span>我已阅读完毕</span>
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-              </svg>
-            </button>
-          </div>
+        {/* 图片区域 - 占满除按钮外的所有空间 */}
+        <div className="flex-1 flex items-center justify-center overflow-hidden">
+          <img 
+            src={scenario.image} 
+            alt="驾驶场景"
+            className="w-full h-full object-contain"
+          />
+        </div>
+        
+        {/* 确认按钮 - 固定在底部 */}
+        <div className="flex-shrink-0 py-4 px-4">
+          <button 
+            onClick={(e) => { handleRipple(e); handleConfirmView(); }}
+            className="btn-glow w-full"
+          >
+            <span>我已阅读完毕</span>
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
+          </button>
         </div>
       </div>
     );
@@ -226,7 +218,7 @@ export default function ScenarioPage() {
                   onClick={(e) => { e.stopPropagation(); handleRipple(e); setState(prev => ({ ...prev, acceptance1: val })); }}
                   className={`num-option ${state.acceptance1 === val ? 'selected' : ''}`}
                 >
-                  {val}
+                  <span style={{ position: 'relative', zIndex: 2 }}>{val}</span>
                 </button>
               ))}
             </div>
@@ -249,7 +241,7 @@ export default function ScenarioPage() {
                   onClick={(e) => { e.stopPropagation(); handleRipple(e); setState(prev => ({ ...prev, acceptance2: val })); }}
                   className={`num-option ${state.acceptance2 === val ? 'selected' : ''}`}
                 >
-                  {val}
+                  <span style={{ position: 'relative', zIndex: 2 }}>{val}</span>
                 </button>
               ))}
             </div>
