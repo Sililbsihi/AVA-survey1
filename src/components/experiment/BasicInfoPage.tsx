@@ -119,6 +119,7 @@ export default function BasicInfoPage({ variant = 'info' }: { variant?: string }
     setError('');
   };
 
+  // 社会影响量表页面
   if (step === 'social') {
     const progress = (Object.keys(socialAnswers).length / socialQuestions.length) * 100;
     return (
@@ -136,7 +137,6 @@ export default function BasicInfoPage({ variant = 'info' }: { variant?: string }
         </div>
 
         <div className="text-center pt-6 pb-4">
-          <h1 className="text-xl font-bold text-white mb-1">社会影响量表</h1>
           <p className="text-white/40 text-xs">请根据您的实际情况选择</p>
         </div>
 
@@ -150,6 +150,7 @@ export default function BasicInfoPage({ variant = 'info' }: { variant?: string }
                 <div className="flex-1 min-w-0">
                   <p className="text-white/90 text-sm leading-relaxed mb-3">{q.text}</p>
                   
+                  {/* 7选项 - 居中显示，标签在下方 */}
                   <div className="flex flex-col gap-2">
                     <div className="flex items-center justify-center gap-1">
                       {[1, 2, 3, 4, 5, 6, 7].map(val => (
@@ -191,6 +192,7 @@ export default function BasicInfoPage({ variant = 'info' }: { variant?: string }
     );
   }
 
+  // 基本信息页面
   return (
     <div className="mobile-container" ref={containerRef}>
       <div className="stars-bg" />
@@ -216,6 +218,7 @@ export default function BasicInfoPage({ variant = 'info' }: { variant?: string }
       </div>
 
       <div className="flex-1 space-y-4">
+        {/* 姓名 */}
         <div className="question-card">
           <span className="question-label">1. 姓名</span>
           <input
@@ -227,6 +230,7 @@ export default function BasicInfoPage({ variant = 'info' }: { variant?: string }
           />
         </div>
 
+        {/* 性别 */}
         <div className="question-card">
           <span className="question-label">2. 性别</span>
           <div className="flex gap-3">
@@ -251,6 +255,7 @@ export default function BasicInfoPage({ variant = 'info' }: { variant?: string }
           </div>
         </div>
 
+        {/* 年龄 */}
         <div className="question-card">
           <span className="question-label">3. 年龄</span>
           <input
@@ -262,6 +267,7 @@ export default function BasicInfoPage({ variant = 'info' }: { variant?: string }
           />
         </div>
 
+        {/* 受教育程度 */}
         <div className="question-card">
           <span className="question-label">4. 受教育程度</span>
           <div className="grid grid-cols-3 gap-2">
@@ -277,6 +283,7 @@ export default function BasicInfoPage({ variant = 'info' }: { variant?: string }
           </div>
         </div>
 
+        {/* 有无驾照 */}
         <div className="question-card">
           <span className="question-label">5. 有无驾照</span>
           <div className="flex gap-3">
@@ -301,6 +308,7 @@ export default function BasicInfoPage({ variant = 'info' }: { variant?: string }
           </div>
         </div>
 
+        {/* 驾照相关 */}
         {formData.hasLicense === '有' && (
           <>
             <div className="question-card">
