@@ -1,7 +1,6 @@
 'use client';
 
 import { useExperiment } from '@/contexts/ExperimentContext';
-import { Button } from '@/components/ui/button';
 
 export default function DisqualifiedPage() {
   const { resetExperiment } = useExperiment();
@@ -27,9 +26,9 @@ export default function DisqualifiedPage() {
         </p>
       </div>
 
-      <Button onClick={resetExperiment} variant="outline" className="w-full bg-slate-700/50 border-slate-600 text-slate-200 hover:bg-slate-600/50">
+      <button onClick={resetExperiment} className="w-full py-3 bg-slate-700/50 border border-slate-600 text-slate-200 hover:bg-slate-600/50 rounded-xl">
         返回首页
-      </Button>
+      </button>
     </div>
   );
 }
