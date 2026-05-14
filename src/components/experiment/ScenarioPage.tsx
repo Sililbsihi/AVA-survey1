@@ -2,125 +2,272 @@
 
 import { useState, useEffect } from 'react';
 import { useExperiment } from '@/contexts/ExperimentContext';
-import { Button } from '@/components/ui/button';
 
-const scaleLabels = ['很不同意', '不同意', '中立', '同意', '很同意'];
+type ViewMode = 'instruction' | 'scenario' | 'decision' | 'complete';
+
+interface ScenarioState {
+  mode: ViewMode;
+  currentScenarioIndex: number;
+  decision: 'yes' | 'no' | null;
+  acceptance1: number | null;
+  acceptance2: number | null;
+  manipulation: string;
+}
+
+const SCENARIOS = [
+  {
+    id: 'low',
+    name: '低自动驾驶比例',
+    image: '/scenario-low.jpg',
+    description: '场景A：道路上自动驾驶汽车较少'
+  },
+  {
+    id: 'high',
+    name: '高自动驾驶比例',
+    image: '/scenario-high.jpg',
+    description: '场景B：道路上自动驾驶汽车较多'
+  }
+];
 
 export default function ScenarioPage() {
-  const { step, setStep, experimentData, updateScenario, updateScenarioOrder } = useExperiment();
-  const [showScenarioA, setShowScenarioA] = useState(true);
-  const [currentScenario, setCurrentScenario] = useState<'A' | 'B'>('A');
+  const { setStep } = useExperiment();
+  const [state, setState] = useState<ScenarioState>({
+    mode: 'instruction',
+    currentScenarioIndex: 0,
+    decision: null,
+    acceptance1: null,
+    acceptance2: null,
+    manipulation: ''
+  });
   const [error, setError] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const scenarioOrder = experimentData.scenarioOrder;
 
   useEffect(() => {
-    if (scenarioOrder.length === 0) {
-      const order = Math.random() > 0.5 ? ['A', 'B'] : ['B', 'A'];
-      updateScenarioOrder(order);
-      setCurrentScenario(order[0] as 'A' | 'B');
-    } else {
-      setCurrentScenario(scenarioOrder[0] as 'A' | 'B');
-    }
+    const order = Math.random() < 0.5 ? ['low', 'high'] : ['high', 'low'];
+    const orderStr = order.join(',');
+    localStorage.setItem('scenarioOrder', orderStr);
   }, []);
 
-  const currentData = currentScenario === 'A' ? experimentData.scenarioA : experimentData.scenarioB;
-  const isHighAutomation = (scenarioOrder[0] === 'B' && currentScenario === 'A') || (scenarioOrder[0] === 'A' && currentScenario === 'B');
-  const imageUrl = isHighAutomation ? '/scenario-high.jpg' : '/scenario-low.jpg';
-
-  const handleDecision = (decision: 'A' | 'B') => {
-    updateScenario({ decision });
-    setError('');
+  const getCurrentScenario = () => {
+    const orderStr = localStorage.getItem('scenarioOrder') || 'low,high';
+    const order = orderStr.split(',');
+    const scenarioId = order[state.currentScenarioIndex];
+    return SCENARIOS.find(s => s.id === scenarioId) || SCENARIOS[0];
   };
 
-  const handleAcceptSelf = (value: number) => updateScenario({ acceptSelf: value });
-  const handleAcceptPublic = (value: number) => updateScenario({ acceptPublic: value });
-  const handleManipulation = (value: string) => updateScenario({ manipulationCheck: value });
+  const handleViewScenario = () => {
+    setState(prev => ({ ...prev, mode: 'scenario' }));
+  };
 
-  const handleNext = () => {
-    if (!currentData.decision) { setError('请选择您的决策'); window.scrollTo(0, 0); return; }
-    if (!currentData.acceptSelf) { setError('请评价个人接受程度'); window.scrollTo(0, 0); return; }
-    if (!currentData.acceptPublic) { setError('请评价公众接受程度'); window.scrollTo(0, 0); return; }
-    if (!currentData.manipulationCheck) { setError('请回答操纵检验问题'); window.scrollTo(0, 0); return; }
-    setError('');
-    setIsSubmitting(true);
-    window.scrollTo(0, 0);
+  const handleConfirmView = () => {
+    setState(prev => ({ ...prev, mode: 'decision' }));
+  };
 
-    setTimeout(() => {
-      if (scenarioOrder[0] === 'A' && currentScenario === 'A') {
-        setCurrentScenario('B');
-        setIsSubmitting(false);
-      } else if (scenarioOrder[0] === 'B' && currentScenario === 'B') {
-        setCurrentScenario('A');
-        setIsSubmitting(false);
-      } else {
-        setStep('complete');
-        setIsSubmitting(false);
-      }
-    }, 300);
+  const handleNextScenario = () => {
+    if (state.currentScenarioIndex === 0) {
+      const scenarioA = {
+        type: getCurrentScenario().id,
+        decision: state.decision,
+        acceptance1: state.acceptance1,
+        acceptance2: state.acceptance2,
+        manipulation: state.manipulation
+      };
+      localStorage.setItem('scenarioA', JSON.stringify(scenarioA));
+      
+      setState(prev => ({
+        ...prev,
+        mode: 'instruction',
+        currentScenarioIndex: 1,
+        decision: null,
+        acceptance1: null,
+        acceptance2: null,
+        manipulation: ''
+      }));
+    } else {
+      const scenarioB = {
+        type: getCurrentScenario().id,
+        decision: state.decision,
+        acceptance1: state.acceptance1,
+        acceptance2: state.acceptance2,
+        manipulation: state.manipulation
+      };
+      localStorage.setItem('scenarioB', JSON.stringify(scenarioB));
+      setStep('complete');
+    }
+  };
+
+  const isComplete = state.decision !== null && state.acceptance1 !== null && 
+                     state.acceptance2 !== null && state.manipulation !== '';
+
+  const renderContent = () => {
+    if (state.mode === 'instruction') {
+      const scenario = getCurrentScenario();
+      return (
+        <div className="card-glow p-6 mb-6 text-center">
+          <h3 className="text-xl font-bold text-white mb-4">
+            情境 {state.currentScenarioIndex + 1}：{scenario.name}
+          </h3>
+          <p className="text-slate-400 mb-6">
+            请仔细阅读以下场景描述
+          </p>
+          <button 
+            onClick={handleViewScenario}
+            className="btn-primary"
+          >
+            查看场景图片
+          </button>
+        </div>
+      );
+    }
+
+    if (state.mode === 'scenario') {
+      const scenario = getCurrentScenario();
+      return (
+        <div className="space-y-4">
+          <div className="card-glow p-4">
+            <img 
+              src={scenario.image} 
+              alt={scenario.name}
+              className="w-full rounded-lg"
+            />
+          </div>
+          <button 
+            onClick={handleConfirmView}
+            className="btn-primary w-full"
+          >
+            我已阅读完毕，继续作答
+          </button>
+        </div>
+      );
+    }
+
+    if (state.mode === 'decision') {
+      return (
+        <div className="space-y-6">
+          <div className="card-glow p-6">
+            <h3 className="text-lg font-bold text-white mb-4 text-center">
+              情境 {state.currentScenarioIndex + 1} 问答
+            </h3>
+            
+            <div className="mb-6">
+              <p className="text-slate-300 mb-4">
+                在该情境下，您是否愿意切换至自动驾驶模式？
+              </p>
+              <div className="flex gap-4 justify-center">
+                <button
+                  onClick={() => { setState(prev => ({ ...prev, decision: 'yes' })); setError(''); }}
+                  className={`option-btn ${state.decision === 'yes' ? 'selected' : ''}`}
+                >
+                  是
+                </button>
+                <button
+                  onClick={() => { setState(prev => ({ ...prev, decision: 'no' })); setError(''); }}
+                  className={`option-btn ${state.decision === 'no' ? 'selected' : ''}`}
+                >
+                  否
+                </button>
+              </div>
+            </div>
+
+            <div className="mb-6">
+              <p className="text-slate-300 mb-4">
+                1. 在该情境下，你是否愿意使用自动驾驶汽车？
+              </p>
+              <div className="flex justify-between items-center gap-1">
+                <span className="text-slate-500 text-xs">完全不愿意</span>
+                <div className="flex gap-2">
+                  {[1, 2, 3, 4, 5].map(val => (
+                    <button
+                      key={val}
+                      onClick={() => setState(prev => ({ ...prev, acceptance1: val }))}
+                      className={`num-btn ${state.acceptance1 === val ? 'selected' : ''}`}
+                    >
+                      {val}
+                    </button>
+                  ))}
+                </div>
+                <span className="text-slate-500 text-xs">完全愿意</span>
+              </div>
+            </div>
+
+            <div className="mb-6">
+              <p className="text-slate-300 mb-4">
+                2. 在该情境下，你是否愿意与其他人一起乘坐自动驾驶的公共交通？
+              </p>
+              <div className="flex justify-between items-center gap-1">
+                <span className="text-slate-500 text-xs">完全不愿意</span>
+                <div className="flex gap-2">
+                  {[1, 2, 3, 4, 5].map(val => (
+                    <button
+                      key={val}
+                      onClick={() => setState(prev => ({ ...prev, acceptance2: val }))}
+                      className={`num-btn ${state.acceptance2 === val ? 'selected' : ''}`}
+                    >
+                      {val}
+                    </button>
+                  ))}
+                </div>
+                <span className="text-slate-500 text-xs">完全愿意</span>
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <p className="text-slate-300 mb-4">
+                请回忆刚才图片中，道路上自动驾驶汽车的比例是多少？
+              </p>
+              <select
+                value={state.manipulation}
+                onChange={(e) => setState(prev => ({ ...prev, manipulation: e.target.value }))}
+                className="w-full p-3 rounded-lg bg-slate-700 border border-slate-600 text-white focus:border-primary focus:outline-none"
+              >
+                <option value="">请选择</option>
+                <option value="low">20%</option>
+                <option value="high">80%</option>
+                <option value="high">50%</option>
+              </select>
+            </div>
+
+            {error && (
+              <p className="text-red-400 text-sm mb-4 text-center">{error}</p>
+            )}
+          </div>
+
+          {isComplete && (
+            <button 
+              onClick={handleNextScenario}
+              className="btn-secondary w-full"
+            >
+              {state.currentScenarioIndex === 0 ? '进入下一个情境' : '完成实验'}
+            </button>
+          )}
+        </div>
+      );
+    }
+
+    return null;
   };
 
   return (
     <div className="mobile-container">
-      <div className="text-center mb-4">
-        <h1 className="text-xl font-bold text-white mb-2">情境实验</h1>
-        <p className="text-sm text-slate-400">情境 {currentScenario}</p>
-      </div>
-
-      <div className="glow-border bg-slate-800/80 backdrop-blur-sm rounded-2xl p-5 mb-6">
-        <img src={imageUrl} alt="驾驶场景" className="w-full rounded-xl mb-4" />
-
-        <div className="space-y-6">
-          <div>
-            <p className="text-sm font-medium text-slate-200 mb-3">面对上述情境，您的决策是？<span className="text-red-400">*</span></p>
-            <div className="flex gap-3">
-              <button onClick={() => handleDecision('A')} className={`flex-1 py-3 rounded-xl text-sm ${currentData.decision === 'A' ? 'bg-primary text-white' : 'bg-slate-700/50 text-slate-300 border border-slate-600'}`}>继续使用自动驾驶</button>
-              <button onClick={() => handleDecision('B')} className={`flex-1 py-3 rounded-xl text-sm ${currentData.decision === 'B' ? 'bg-primary text-white' : 'bg-slate-700/50 text-slate-300 border border-slate-600'}`}>手动驾驶</button>
-            </div>
-          </div>
-
-          <div>
-            <p className="text-sm font-medium text-slate-200 mb-3">您对该情境下自动驾驶技术的个人接受程度：<span className="text-red-400">*</span></p>
-            <div className="space-y-3">
-              {scaleLabels.map((label, index) => {
-                const value = index + 1;
-                return (
-                  <button key={value} onClick={() => handleAcceptSelf(value)} className={`w-full py-3 px-4 rounded-xl text-sm ${currentData.acceptSelf === value ? 'bg-primary text-white' : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700'}`}>
-                    <span className="flex items-center justify-between"><span>{label}</span>{currentData.acceptSelf === value && <span>✓</span>}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          <div>
-            <p className="text-sm font-medium text-slate-200 mb-3">您认为公众对该情境下自动驾驶技术的接受程度：<span className="text-red-400">*</span></p>
-            <div className="space-y-3">
-              {scaleLabels.map((label, index) => {
-                const value = index + 1;
-                return (
-                  <button key={value} onClick={() => handleAcceptPublic(value)} className={`w-full py-3 px-4 rounded-xl text-sm ${currentData.acceptPublic === value ? 'bg-primary text-white' : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700'}`}>
-                    <span className="flex items-center justify-between"><span>{label}</span>{currentData.acceptPublic === value && <span>✓</span>}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          <div>
-            <p className="text-sm font-medium text-slate-200 mb-3">您认为在该情境下，自动驾驶技术接管车辆的时间比例为：<span className="text-red-400">*</span></p>
-            <div className="flex gap-3">
-              {['20%', '80%'].map(opt => (
-                <button key={opt} onClick={() => handleManipulation(opt)} className={`flex-1 py-3 rounded-xl text-sm ${currentData.manipulationCheck === opt ? 'bg-primary text-white' : 'bg-slate-700/50 text-slate-300 border border-slate-600'}`}>{opt}</button>
-              ))}
-            </div>
-          </div>
+      <div className="nav-header sticky top-0 z-10 py-4 mb-6">
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-slate-400 text-sm">自动驾驶接受度研究</span>
+          <span className="text-primary font-medium text-sm">
+            情境 {state.currentScenarioIndex + 1}/2
+          </span>
         </div>
-
-        {error && <p className="text-red-400 text-sm text-center mt-4">{error}</p>}
-        <Button onClick={handleNext} disabled={isSubmitting} className="w-full mt-6 bg-primary hover:bg-primary/90">{isSubmitting ? '提交中...' : '下一页'}</Button>
+        <div className="progress-bar">
+          <div 
+            className="progress-fill" 
+            style={{ width: `${((state.currentScenarioIndex + 1) / 2) * 100}%` }} 
+          />
+        </div>
       </div>
+
+      <div className="mb-4">
+        <span className="tag">情境实验</span>
+      </div>
+
+      {renderContent()}
     </div>
   );
 }
