@@ -1,9 +1,14 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
-const supabase = createClient(supabaseUrl, supabaseKey);
+function getSupabaseClient(): SupabaseClient {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error('Supabase configuration is missing');
+  }
+  return createClient(supabaseUrl, supabaseKey);
+}
 
 export async function GET(request: Request) {
   try {
@@ -17,17 +22,10 @@ export async function GET(request: Request) {
       );
     }
 
-    const { count: total, error: countError } = await supabase
+    const supabase = getSupabaseClient();
+    const { count: total } = await supabase
       .from('experiment_sessions')
       .select('*', { count: 'exact', head: true });
-
-    if (countError) {
-      console.error('统计查询错误:', countError);
-      return NextResponse.json(
-        { success: false, error: '统计获取失败' },
-        { status: 500 }
-      );
-    }
 
     const today = new Date().toISOString().split('T')[0];
     const { count: todayCount } = await supabase
