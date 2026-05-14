@@ -7,7 +7,7 @@ interface ExperimentContextType {
   step: ExperimentStep;
   setStep: (step: ExperimentStep) => void;
   experimentData: ExperimentData;
-  data: ExperimentData; // 这里强行加上 data 属性
+  data: ExperimentData; // 这里强行加上 data 属
   updateScreening: (data: Partial<ScreeningData>) => void;
   updateBasicInfo: (data: Partial<BasicInfoData>) => void;
   updateSocialInfluence: (data: Partial<SocialInfluenceData>) => void;
