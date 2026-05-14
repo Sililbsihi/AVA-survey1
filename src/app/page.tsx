@@ -11,17 +11,30 @@ import DisqualifiedPage from '@/components/experiment/DisqualifiedPage';
 export default function HomePage() {
   const { step } = useExperiment();
 
+  const renderPage = () => {
+    switch (step) {
+      case 'screening':
+        return <ScreeningPage />;
+      case 'basicInfo':
+        return <BasicInfoPage />;
+      case 'socialInfluence':
+        return <BasicInfoPage variant="socialInfluence" />;
+      case 'instruction':
+        return <InstructionPage />;
+      case 'scenario':
+        return <ScenarioPage />;
+      case 'complete':
+        return <CompletePage />;
+      case 'disqualified':
+        return <DisqualifiedPage />;
+      default:
+        return <ScreeningPage />;
+    }
+  };
+
   return (
-    <main className="min-h-screen flex flex-col">
-      <div className="flex-1">
-        {step === 'screening' && <ScreeningPage />}
-        {step === 'basic-info' && <BasicInfoPage />}
-        {step === 'social-influence' && <BasicInfoPage />}
-        {step === 'instruction' && <InstructionPage />}
-        {step === 'scenario' && <ScenarioPage />}
-        {step === 'complete' && <CompletePage />}
-        {step === 'disqualified' && <DisqualifiedPage />}
-      </div>
+    <main className="min-h-screen">
+      {renderPage()}
     </main>
   );
 }
