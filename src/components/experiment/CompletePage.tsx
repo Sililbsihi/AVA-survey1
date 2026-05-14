@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useExperiment } from '@/contexts/ExperimentContext';
 
 export default function CompletePage() {
-  const { data } = useExperiment();
+  const { experimentData: data } = (useExperiment() as any);
   const [submitted, setSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState('');
 
