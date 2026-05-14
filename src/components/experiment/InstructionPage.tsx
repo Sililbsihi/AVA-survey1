@@ -8,20 +8,14 @@ export default function InstructionPage() {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const handleRipple = (e: React.MouseEvent<HTMLElement>) => {
-    const target = e.currentTarget;
-    const rect = target.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const x = e.clientX;
+    const y = e.clientY;
     
     const ripple = document.createElement('span');
     ripple.className = 'ripple-effect';
     ripple.style.left = `${x}px`;
     ripple.style.top = `${y}px`;
-    ripple.style.width = '60px';
-    ripple.style.height = '60px';
-    ripple.style.marginLeft = '-30px';
-    ripple.style.marginTop = '-30px';
-    target.appendChild(ripple);
+    document.body.appendChild(ripple);
     setTimeout(() => ripple.remove(), 600);
     
     const randomAngles = Array.from({ length: 6 }, (_, i) => (Math.PI * 2 / 6) * i + Math.random() * 0.5);
@@ -29,6 +23,7 @@ export default function InstructionPage() {
     for (let i = 0; i < 6; i++) {
       const particle = document.createElement('span');
       particle.className = 'particle';
+      particle.style.position = 'fixed';
       const angle = randomAngles[i];
       const distance = randomDistances[i];
       particle.style.setProperty('--tx', `${Math.cos(angle) * distance}px`);
@@ -36,7 +31,8 @@ export default function InstructionPage() {
       particle.style.left = `${x}px`;
       particle.style.top = `${y}px`;
       particle.style.background = ['#f472b6', '#a78bfa', '#60a5fa', '#34d399'][i % 4];
-      target.appendChild(particle);
+      particle.style.zIndex = '9999';
+      document.body.appendChild(particle);
       setTimeout(() => particle.remove(), 700);
     }
   };
@@ -58,6 +54,7 @@ export default function InstructionPage() {
       </div>
 
       <div className="flex-1 flex flex-col justify-center py-8">
+        {/* 场景图标 */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-br from-violet-500/20 to-purple-500/20 border border-violet-400/30 mb-6 animate-float">
             <svg className="w-10 h-10 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -70,6 +67,7 @@ export default function InstructionPage() {
           </h1>
         </div>
 
+        {/* 说明内容 */}
         <div className="glass-card mb-6">
           <div className="space-y-5">
             <div className="flex gap-4">
@@ -94,8 +92,9 @@ export default function InstructionPage() {
           </div>
         </div>
 
+        {/* 开始按钮 */}
         <button 
-          onClick={(e) => { handleRipple(e); setStep('scenario'); }}
+          onClick={(e) => { handleRipple(e); setStep('scenario'); }} 
           className="btn-glow ripple-container"
         >
           <span>开始实验</span>
