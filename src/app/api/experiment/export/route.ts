@@ -81,7 +81,7 @@ export async function GET() {
       Object.entries(row).forEach(([key, value]) => {
         const label = QUESTION_LABELS[key] || key;
         if (key === 'submitted_at' && value) {
-          newRow[label] = new Date(value).toLocaleString('zh-CN');
+          newRow[label] = new Date(value as string).toLocaleString('zh-CN');
         } else if (value === null || value === undefined) {
           newRow[label] = '';
         } else {
