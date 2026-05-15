@@ -60,9 +60,9 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const password = searchParams.get('password');
 
-    if (password !== 'admin123') {
+    /*if (password !== 'admin123') {
       return new Response('Unauthorized', { status: 401 });
-    }
+    }*/
 
     const supabase = getSupabaseClient();
     if (!supabase) throw new Error('Database config missing');
