@@ -1,6 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
 import * as XLSX from 'xlsx';
 
+// 强制使用动态渲染，防止 Vercel 缓存旧的错误响应
+export const dynamic = 'force-dynamic';
+
 function getSupabaseClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -12,7 +15,6 @@ function getSupabaseClient() {
   return createClient(supabaseUrl, supabaseKey);
 }
 
-// 题目文本映射
 const questionLabels: Record<string, string> = {
   'q1_screening': 'Q1-我愿意使用自动驾驶',
   'q2_screening': 'Q2-我愿意和其他人一起使用自动驾驶公共交通',
@@ -59,16 +61,11 @@ export async function GET(request: Request) {
     const password = searchParams.get('password');
 
     if (password !== 'admin123') {
-      return new Response(JSON.stringify({ success: false, error: '权限验证失败' }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return new Response('Unauthorized', { status: 401 });
     }
 
     const supabase = getSupabaseClient();
-    if (!supabase) {
-      throw new Error('数据库配置缺失');
-    }
+    if (!supabase) throw new Error('Database config missing');
     
     const { data, error } = await supabase
       .from('experiment_sessions')
@@ -76,75 +73,50 @@ export async function GET(request: Request) {
       .order('submitted_at', { ascending: false });
 
     if (error) throw error;
+    if (!data || data.length === 0) return new Response('No data', { status: 404 });
 
-    if (!data || data.length === 0) {
-      return new Response(JSON.stringify({ success: false, error: '暂无数据' }), {
-        status: 404,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-
-    // 处理数据行，确保类型安全
     const processedData = data.map((row, index) => {
       const newRow: Record<string, string | number> = { '编号': index + 1 };
-      
       Object.entries(row).forEach(([key, value]) => {
-        // 跳过不需要导出的原始 ID 和创建时间
         if (key === 'id' || key === 'created_at') return;
-        
         const label = questionLabels[key] || key;
         let displayValue: string | number = '';
-        
         if (value === null || value === undefined) {
           displayValue = '';
         } else if (typeof value === 'boolean') {
           displayValue = value ? '是' : '否';
         } else if (key === 'submitted_at') {
-          // 安全处理日期字符串
-          const dateStr = String(value);
-          displayValue = dateStr.replace('T', ' ').substring(0, 19);
-        } else if (typeof value === 'string' || typeof value === 'number') {
-          displayValue = value;
+          displayValue = String(value).replace('T', ' ').substring(0, 19);
         } else {
-          displayValue = String(value);
+          displayValue = typeof value === 'string' || typeof value === 'number' ? value : String(value);
         }
-        
         newRow[label] = displayValue;
       });
       return newRow;
     });
 
-    // 1. 创建工作簿
     const worksheet = XLSX.utils.json_to_sheet(processedData);
-    
-    // 设置列宽
-    const colCount = Object.keys(processedData[0] || {}).length;
-    worksheet['!cols'] = Array(colCount).fill({ wch: 20 });
-
+    worksheet['!cols'] = Array(Object.keys(processedData[0]).length).fill({ wch: 20 });
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, '实验数据');
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Data');
 
-    // 2. 生成 Excel 二进制数据 (使用 buffer 类型)
-    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'buffer' });
+    // 关键修复：使用 array 类型并转为 Uint8Array
+    const excelArray = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    const finalBuffer = new Uint8Array(excelArray);
     
-    const dateTag = new Date().toISOString().split('T')[0];
-    const filename = `实验数据_${dateTag}.xlsx`;
+    const filename = `Data_${new Date().toISOString().split('T')[0]}.xlsx`;
 
-    // 3. 返回二进制响应
-    return new Response(excelBuffer, {
+    return new Response(finalBuffer, {
       status: 200,
       headers: {
         'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        'Content-Disposition': `attachment; filename="${encodeURIComponent(filename)}"`,
-        'Cache-Control': 'no-cache'
+        'Content-Disposition': `attachment; filename="${filename}"`,
+        'Cache-Control': 'no-store, max-age=0'
       },
     });
 
   } catch (err: any) {
-    console.error('导出失败:', err);
-    return new Response(JSON.stringify({ success: false, error: err.message || '服务器错误' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    console.error(err);
+    return new Response(err.message || 'Error', { status: 500 });
   }
 }
