@@ -1,5 +1,6 @@
-@import url('https://fonts.googleapis.cn/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap');
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
   --primary: #6366f1;
@@ -362,7 +363,7 @@ body {
   box-shadow: 0 0 8px var(--accent);
 }
 
-/* 数字选项 - 完全移除transform防止偏移 */
+/* 数字选项 */
 .num-option {
   position: relative;
   width: 40px;
