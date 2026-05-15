@@ -1,12 +1,14 @@
 import { NextResponse } from 'next/server';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { createClient } from '@supabase/supabase-js';
 
-function getSupabaseClient(): SupabaseClient {
+function getSupabaseClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  
   if (!supabaseUrl || !supabaseKey) {
-    throw new Error('Supabase configuration is missing');
+    return null;
   }
+  
   return createClient(supabaseUrl, supabaseKey);
 }
 
@@ -63,6 +65,17 @@ export async function POST(request: Request) {
     };
 
     const supabase = getSupabaseClient();
+    
+    // 如果 Supabase 未配置，返回成功但记录警告
+    if (!supabase) {
+      console.warn('Supabase 未配置，数据未保存到数据库');
+      console.log('提交的数据:', JSON.stringify(insertData, null, 2));
+      return NextResponse.json({ 
+        success: true, 
+        warning: '数据库未配置，数据仅打印到日志'
+      });
+    }
+
     const { error } = await supabase
       .from('experiment_sessions')
       .insert([insertData]);
