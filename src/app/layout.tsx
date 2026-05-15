@@ -29,7 +29,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="zh-CN">
-      <body className="antialiased gradient-animate min-h-screen overflow-x-hidden">
+      <body className="antialiased min-h-screen overflow-x-hidden">
         <ExperimentProvider>
           {children}
         </ExperimentProvider>
