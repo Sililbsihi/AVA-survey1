@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+ import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import * as XLSX from 'xlsx';
 
@@ -99,48 +99,66 @@ export async function GET(request: Request) {
     const processedData = data.map((row, index) => {
       const newRow: Record<string, unknown> = { '编号': index + 1 };
       Object.entries(row).forEach(([key, value]) => {
-        if (key !== 'id' && key !== 'created_at') {
-          let displayValue = value;
-          if (value === null || value === undefined) {
-            displayValue = '';
-          } else if (typeof value === 'boolean') {
-            displayValue = value ? '是' : '否';
-          } else if (key === 'submitted_at' && typeof value === 'string') {
-            displayValue = value.replace('T', ' ').substring(0, 19);
-          }
-          newRow[questionLabels[key] || key] = displayValue;
+        // 跳过 id 和 created_at
+        if (key === 'id' || key === 'created_at') {
+          return;
         }
+        
+        let displayValue: unknown = value;
+        
+        if (value === null || value === undefined) {
+          displayValue = '';
+        } else if (typeof value === 'boolean') {
+          displayValue = value ? '是' : '否';
+        } else if (key === 'submitted_at') {
+          // 格式化时间为 YYYY-MM-DD HH:mm:ss
+          if (typeof value === 'string') {
+            const parts = value.split('T');
+            if (parts.length === 2) {
+              const timePart = parts[1].substring(0, 8);
+              displayValue = `${parts[0]} ${timePart}`;
+            } else {
+              displayValue = value;
+            }
+          } else {
+            displayValue = String(value);
+          }
+        } else {
+          displayValue = value;
+        }
+        
+        newRow[questionLabels[key] || key] = displayValue;
       });
       return newRow;
     });
 
     // 创建工作表
     const worksheet = XLSX.utils.json_to_sheet(processedData);
-    worksheet['!cols'] = Object.keys(processedData[0] || {}).map(() => ({ wch: 25 }));
+    
+    // 设置列宽
+    const colCount = Object.keys(processedData[0] || {}).length;
+    worksheet['!cols'] = Array(colCount).fill({ wch: 25 });
 
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, '实验数据');
 
-    // 使用 'array' 类型生成 Buffer
-    const excelBuffer = XLSX.write(workbook, { type: 'array', bookType: 'xlsx' });
-    const uint8Array = new Uint8Array(excelBuffer);
-    
+    // 使用 base64 编码返回（Serverless 环境更可靠）
+    const excelBase64 = XLSX.write(workbook, { type: 'base64', bookType: 'xlsx' });
     const filename = `experiment_data_${new Date().toISOString().split('T')[0]}.xlsx`;
     
-    return new Response(uint8Array, {
+    return new Response(excelBase64, {
       status: 200,
       headers: {
-        'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'Content-Type': 'text/plain; charset=utf-8',
         'Content-Disposition': `attachment; filename="${filename}"`,
-        'Content-Length': String(uint8Array.length),
         'Cache-Control': 'no-cache, no-store, must-revalidate',
       },
     });
-  } catch (error) {
-    console.error('导出数据失败:', error);
+  } catch (err) {
+    console.error('导出数据失败:', err);
     return NextResponse.json(
       { success: false, error: '服务器错误' },
       { status: 500 }
     );
   }
-}
+}   
