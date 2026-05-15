@@ -7,7 +7,7 @@ function getSupabaseClient() {
   const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   
   if (!supabaseUrl || !supabaseKey) {
-    return null;
+    return null;  // 改为返回 null，而不是 throw Error
   }
   
   return createClient(supabaseUrl, supabaseKey);
@@ -57,10 +57,15 @@ export async function GET() {
   try {
     const supabase = getSupabaseClient();
     
-    if (!supabase) {
-      return NextResponse.json({ success: false, error: '数据库未配置' }, { status: 500 });
-    }
 
+    // 如果 Supabase 未配置，返回错误
+    if (!supabase) {
+      return NextResponse.json(
+        { success: false, error: '数据库未配置' },
+        { status: 500 }
+      );
+    }
+   
     const { data, error } = await supabase
       .from('experiment_sessions')
       .select('*')
