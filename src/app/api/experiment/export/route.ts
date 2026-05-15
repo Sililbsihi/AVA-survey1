@@ -1,4 +1,3 @@
- import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import * as XLSX from 'xlsx';
 
@@ -60,19 +59,15 @@ export async function GET(request: Request) {
     const password = searchParams.get('password');
 
     if (password !== 'admin123') {
-      return NextResponse.json(
-        { success: false, error: '权限验证失败' },
-        { status: 401 }
-      );
+      return new Response(JSON.stringify({ success: false, error: '权限验证失败' }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' }
+      });
     }
 
     const supabase = getSupabaseClient();
-    
     if (!supabase) {
-      return NextResponse.json(
-        { success: false, error: '数据库未配置' },
-        { status: 500 }
-      );
+      throw new Error('数据库配置缺失');
     }
     
     const { data, error } = await supabase
@@ -80,85 +75,76 @@ export async function GET(request: Request) {
       .select('*')
       .order('submitted_at', { ascending: false });
 
-    if (error) {
-      console.error('数据库查询错误:', error);
-      return NextResponse.json(
-        { success: false, error: '数据获取失败' },
-        { status: 500 }
-      );
-    }
+    if (error) throw error;
 
     if (!data || data.length === 0) {
-      return NextResponse.json(
-        { success: false, error: '暂无数据' },
-        { status: 404 }
-      );
+      return new Response(JSON.stringify({ success: false, error: '暂无数据' }), {
+        status: 404,
+        headers: { 'Content-Type': 'application/json' }
+      });
     }
 
-    // 处理数据行
+    // 处理数据行，确保类型安全
     const processedData = data.map((row, index) => {
-      const newRow: Record<string, unknown> = { '编号': index + 1 };
+      const newRow: Record<string, string | number> = { '编号': index + 1 };
+      
       Object.entries(row).forEach(([key, value]) => {
-        // 跳过 id 和 created_at
-        if (key === 'id' || key === 'created_at') {
-          return;
-        }
+        // 跳过不需要导出的原始 ID 和创建时间
+        if (key === 'id' || key === 'created_at') return;
         
-        let displayValue: unknown = value;
+        const label = questionLabels[key] || key;
+        let displayValue: string | number = '';
         
         if (value === null || value === undefined) {
           displayValue = '';
         } else if (typeof value === 'boolean') {
           displayValue = value ? '是' : '否';
         } else if (key === 'submitted_at') {
-          // 格式化时间为 YYYY-MM-DD HH:mm:ss
-          if (typeof value === 'string') {
-            const parts = value.split('T');
-            if (parts.length === 2) {
-              const timePart = parts[1].substring(0, 8);
-              displayValue = `${parts[0]} ${timePart}`;
-            } else {
-              displayValue = value;
-            }
-          } else {
-            displayValue = String(value);
-          }
-        } else {
+          // 安全处理日期字符串
+          const dateStr = String(value);
+          displayValue = dateStr.replace('T', ' ').substring(0, 19);
+        } else if (typeof value === 'string' || typeof value === 'number') {
           displayValue = value;
+        } else {
+          displayValue = String(value);
         }
         
-        newRow[questionLabels[key] || key] = displayValue;
+        newRow[label] = displayValue;
       });
       return newRow;
     });
 
-    // 创建工作表
+    // 1. 创建工作簿
     const worksheet = XLSX.utils.json_to_sheet(processedData);
     
     // 设置列宽
     const colCount = Object.keys(processedData[0] || {}).length;
-    worksheet['!cols'] = Array(colCount).fill({ wch: 25 });
+    worksheet['!cols'] = Array(colCount).fill({ wch: 20 });
 
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, '实验数据');
 
-    // 使用 base64 编码返回（Serverless 环境更可靠）
-    const excelBase64 = XLSX.write(workbook, { type: 'base64', bookType: 'xlsx' });
-    const filename = `experiment_data_${new Date().toISOString().split('T')[0]}.xlsx`;
+    // 2. 生成 Excel 二进制数据 (使用 buffer 类型)
+    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'buffer' });
     
-    return new Response(excelBase64, {
+    const dateTag = new Date().toISOString().split('T')[0];
+    const filename = `实验数据_${dateTag}.xlsx`;
+
+    // 3. 返回二进制响应
+    return new Response(excelBuffer, {
       status: 200,
       headers: {
-        'Content-Type': 'text/plain; charset=utf-8',
-        'Content-Disposition': `attachment; filename="${filename}"`,
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'Content-Disposition': `attachment; filename="${encodeURIComponent(filename)}"`,
+        'Cache-Control': 'no-cache'
       },
     });
-  } catch (err) {
-    console.error('导出数据失败:', err);
-    return NextResponse.json(
-      { success: false, error: '服务器错误' },
-      { status: 500 }
-    );
+
+  } catch (err: any) {
+    console.error('导出失败:', err);
+    return new Response(JSON.stringify({ success: false, error: err.message || '服务器错误' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
-}   
+}
