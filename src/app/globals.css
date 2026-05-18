@@ -305,22 +305,24 @@ body {
 .option-btn.selected { background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(168, 85, 247, 0.2)); border-color: var(--primary-light); color: #fff; box-shadow: 0 0 20px rgba(99, 102, 241, 0.3); }
 .option-btn.selected::after { content: ''; position: absolute; top: 8px; right: 8px; width: 8px; height: 8px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 8px var(--accent); }
 
-/* 数字选项 */
+
+/* 数字选项 - 响应式适配 */
 .num-option {
   position: relative;
-  width: 40px;
-  height: 40px;
+  width: clamp(32px, 8vw, 40px);
+  height: clamp(32px, 8vw, 40px);
   background: rgba(255, 255, 255, 0.06);
   border: 1.5px solid rgba(255, 255, 255, 0.12);
-  border-radius: 12px;
+  border-radius: 10px;
   color: rgba(255, 255, 255, 0.8);
-  font-size: 15px;
+  font-size: clamp(13px, 3.5vw, 15px);
   font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .num-option:hover { background: rgba(99, 102, 241, 0.2); border-color: rgba(99, 102, 241, 0.5); }
@@ -330,13 +332,13 @@ body {
 /* 紧凑数字选项 */
 .num-option-compact {
   position: relative;
-  width: 36px;
-  height: 36px;
+  width: clamp(28px, 7vw, 36px);
+  height: clamp(28px, 7vw, 36px);
   background: rgba(255, 255, 255, 0.05);
   border: 1.5px solid rgba(255, 255, 255, 0.12);
-  border-radius: 10px;
+  border-radius: 8px;
   color: rgba(255, 255, 255, 0.75);
-  font-size: 14px;
+  font-size: clamp(12px, 3vw, 14px);
   font-weight: 600;
   cursor: pointer;
   display: flex;
