@@ -203,15 +203,15 @@ export default function ScenarioPage() {
           </div>
         </div>
 
-        {/* 接受度评分1 */}
+        {/* 接受度评分1 - 添加 overflow-x-auto */}
         <div className="question-card">
           <span className="question-label">接受度评分</span>
           <p className="question-text">
             在该情境下，你是否愿意使用自动驾驶汽车？
           </p>
-          <div className="flex items-center justify-between gap-1">
-            <span className="text-white/40 text-xs">完全不愿意</span>
-            <div className="flex gap-1.5">
+          <div className="flex items-center justify-between gap-1 overflow-x-auto">
+            <span className="text-white/40 text-xs whitespace-nowrap flex-shrink-0">完全不愿意</span>
+            <div className="flex gap-1 sm:gap-1.5 flex-shrink-0">
               {[1, 2, 3, 4, 5].map(val => (
                 <button
                   key={val}
@@ -222,19 +222,19 @@ export default function ScenarioPage() {
                 </button>
               ))}
             </div>
-            <span className="text-white/40 text-xs">完全愿意</span>
+            <span className="text-white/40 text-xs whitespace-nowrap flex-shrink-0">完全愿意</span>
           </div>
         </div>
 
-        {/* 接受度评分2 */}
+        {/* 接受度评分2 - 添加 overflow-x-auto */}
         <div className="question-card">
           <span className="question-label">接受度评分</span>
           <p className="question-text">
             在该情境下，你是否愿意与其他人一起乘坐自动驾驶的公共交通？
           </p>
-          <div className="flex items-center justify-between gap-1">
-            <span className="text-white/40 text-xs">完全不愿意</span>
-            <div className="flex gap-1.5">
+          <div className="flex items-center justify-between gap-1 overflow-x-auto">
+            <span className="text-white/40 text-xs whitespace-nowrap flex-shrink-0">完全不愿意</span>
+            <div className="flex gap-1 sm:gap-1.5 flex-shrink-0">
               {[1, 2, 3, 4, 5].map(val => (
                 <button
                   key={val}
@@ -245,7 +245,7 @@ export default function ScenarioPage() {
                 </button>
               ))}
             </div>
-            <span className="text-white/40 text-xs">完全愿意</span>
+            <span className="text-white/40 text-xs whitespace-nowrap flex-shrink-0">完全愿意</span>
           </div>
         </div>
 
