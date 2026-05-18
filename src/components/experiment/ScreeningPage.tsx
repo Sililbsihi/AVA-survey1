@@ -124,10 +124,10 @@ export default function ScreeningPage() {
             <span className="question-label">第 {index + 1} 题</span>
             <p className="question-text">{q.text}</p>
             
-            {/* 选项区域 */}
-            <div className="flex items-center justify-between gap-1">
-              <span className="text-white/40 text-xs whitespace-nowrap">很不同意</span>
-              <div className="flex gap-1.5">
+            {/* 选项区域 - 添加 overflow-x-auto */}
+            <div className="flex items-center justify-between gap-1 overflow-x-auto">
+              <span className="text-white/40 text-xs whitespace-nowrap flex-shrink-0">很不同意</span>
+              <div className="flex gap-1 sm:gap-1.5 flex-shrink-0">
                 {[1, 2, 3, 4, 5].map(val => (
                   <button
                     key={val}
@@ -142,7 +142,7 @@ export default function ScreeningPage() {
                   </button>
                 ))}
               </div>
-              <span className="text-white/40 text-xs whitespace-nowrap">很同意</span>
+              <span className="text-white/40 text-xs whitespace-nowrap flex-shrink-0">很同意</span>
             </div>
           </div>
         ))}
