@@ -219,13 +219,13 @@ export default function BasicInfoPage({ variant = 'info' }: { variant?: string }
       <div className="flex-1 space-y-4">
         {/* 姓名 */}
         <div className="question-card">
-          <span className="question-label">1. 姓名</span>
+          <span className="question-label">1. 真实姓名</span>
           <input
             type="text"
             value={formData.name}
             onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
             className="input-glow"
-            placeholder="请输入姓名"
+            placeholder="请输入真实姓名"
           />
         </div>
 
