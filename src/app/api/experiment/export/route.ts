@@ -1,6 +1,8 @@
-import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import * as XLSX from 'xlsx';
+
+// 强制动态渲染，防止 Vercel 缓存
+export const dynamic = 'force-dynamic';
 
 function getSupabaseClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -56,69 +58,19 @@ const questionLabels: Record<string, string> = {
 
 // 定义字段顺序（按问卷结构排列）
 const fieldOrder = [
-  // 筛选问卷
-  'q1_screening',
-  'q2_screening',
-  'q3_screening',
-  'q4_screening',
-  'q5_screening',
-  'q6_screening',
-  'q7_screening',
-  // 基本信息
-  'name',
-  'gender',
-  'phone',
-  'age',
-  'education',
-  'has_driver_license',
-  'driving_experience_years',
-  'driving_mileage',
-  'has_assist_driving_exp',
-  // 社会影响量表
-  'q9_social',
-  'q10_social',
-  'q11_social',
-  'q12_social',
-  'q13_social',
-  'q14_social',
-  'q15_social',
-  'q16_social',
-  'q17_attention',
-  // 情境实验
-  'scenario_order',
-  'scenario_a_type',
-  'scenario_a_decision',
-  'scenario_a_acceptance1',
-  'scenario_a_acceptance2',
-  'scenario_a_manipulation',
-  'scenario_b_type',
-  'scenario_b_decision',
-  'scenario_b_acceptance1',
-  'scenario_b_acceptance2',
-  'scenario_b_manipulation',
-  // 提交时间
+  'q1_screening', 'q2_screening', 'q3_screening', 'q4_screening', 'q5_screening', 'q6_screening', 'q7_screening',
+  'name', 'gender', 'phone', 'age', 'education', 'has_driver_license', 'driving_experience_years', 'driving_mileage', 'has_assist_driving_exp',
+  'q9_social', 'q10_social', 'q11_social', 'q12_social', 'q13_social', 'q14_social', 'q15_social', 'q16_social', 'q17_attention',
+  'scenario_order', 'scenario_a_type', 'scenario_a_decision', 'scenario_a_acceptance1', 'scenario_a_acceptance2', 'scenario_a_manipulation',
+  'scenario_b_type', 'scenario_b_decision', 'scenario_b_acceptance1', 'scenario_b_acceptance2', 'scenario_b_manipulation',
   'submitted_at'
 ];
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
-    const { searchParams } = new URL(request.url);
-    const password = searchParams.get('password');
-
-    /*if (password !== 'admin123') {
-      return NextResponse.json(
-        { success: false, error: '权限验证失败' },
-        { status: 401 }
-      );
-    }*/
-
     const supabase = getSupabaseClient();
-    
     if (!supabase) {
-      return NextResponse.json(
-        { success: false, error: '数据库未配置' },
-        { status: 500 }
-      );
+      return new Response('Database config missing', { status: 500 });
     }
     
     const { data, error } = await supabase
@@ -126,86 +78,65 @@ export async function GET(request: Request) {
       .select('*')
       .order('submitted_at', { ascending: false });
 
-    if (error) {
-      console.error('数据库查询错误:', error);
-      return NextResponse.json(
-        { success: false, error: '数据获取失败' },
-        { status: 500 }
-      );
-    }
-
+    if (error) throw error;
     if (!data || data.length === 0) {
-      return NextResponse.json(
-        { success: false, error: '暂无数据' },
-        { status: 404 }
-      );
+      return new Response('No data available', { status: 404 });
     }
 
     // 创建表头（按定义顺序）
     const headers = ['编号', ...fieldOrder.map(key => questionLabels[key] || key)];
 
-    // 处理数据行
+    // 处理数据行，确保 TypeScript 类型安全
     const processedData = data.map((row, index) => {
-      const newRow: Record<string, unknown> = { '编号': index + 1 };
+      const newRow: Record<string, string | number> = { '编号': index + 1 };
       
-      // 按定义的顺序处理字段
       fieldOrder.forEach(key => {
-        let value = row[key];
-        let displayValue: unknown = value;
+        const value = row[key];
+        const label = questionLabels[key] || key;
+        let displayValue: string | number = '';
         
         if (value === null || value === undefined) {
           displayValue = '';
         } else if (typeof value === 'boolean') {
           displayValue = value ? '是' : '否';
         } else if (key === 'submitted_at') {
-          // 格式化时间为 YYYY-MM-DD HH:mm:ss
-          if (typeof value === 'string') {
-            const parts = value.split('T');
-            if (parts.length === 2) {
-              const timePart = parts[1].substring(0, 8);
-              displayValue = `${parts[0]} ${timePart}`;
-            } else {
-              displayValue = value;
-            }
-          } else {
-            displayValue = String(value);
-          }
+          displayValue = String(value).replace('T', ' ').substring(0, 19);
         } else {
-          displayValue = value;
+          displayValue = typeof value === 'string' || typeof value === 'number' ? value : String(value);
         }
         
-        newRow[questionLabels[key] || key] = displayValue;
+        newRow[label] = displayValue;
       });
       
       return newRow;
     });
 
-    // 创建工作表（显式设置表头）
+    // 创建工作表
     const worksheet = XLSX.utils.json_to_sheet(processedData, { header: headers });
-    
-    // 设置列宽
-    worksheet['!cols'] = headers.map(() => ({ wch: 25 }));
+    worksheet['!cols'] = headers.map(() => ({ wch: 22 }));
 
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, '实验数据');
 
-    // 生成 Excel 文件的 ArrayBuffer
-    const xlsxBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    // 关键修复：直接在服务端生成原始的二进制数据流，放弃 Base64 JSON 包装
+    const excelArray = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    const finalBuffer = new Uint8Array(excelArray);
     
-    // 返回 JSON 格式的 base64 数据，前端负责下载
-    const base64Data = Buffer.from(xlsxBuffer).toString('base64');
-    const filename = `experiment_data_${new Date().toISOString().split('T')[0]}.xlsx`;
-    
-    return NextResponse.json({
-      success: true,
-      data: base64Data,
-      filename: filename
+    const dateTag = new Date().toISOString().split('T')[0];
+    const filename = `实验数据_${dateTag}.xlsx`;
+
+    // 直接返回文件 Response
+    return new Response(finalBuffer, {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'Content-Disposition': `attachment; filename="${encodeURIComponent(filename)}"`,
+        'Cache-Control': 'no-store, max-age=0'
+      },
     });
-  } catch (err) {
+
+  } catch (err: any) {
     console.error('导出数据失败:', err);
-    return NextResponse.json(
-      { success: false, error: '服务器错误' },
-      { status: 500 }
-    );
+    return new Response(err.message || 'Server Error', { status: 500 });
   }
 }
