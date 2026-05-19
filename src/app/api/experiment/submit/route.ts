@@ -49,6 +49,7 @@ export async function POST(request: Request) {
       q7_screening: parseNumber(screening?.q7),
       name: basicInfo?.name || null,
       gender: basicInfo?.gender || null,
+      phone: basicInfo?.phone || null,
       age: basicInfo?.age || null,
       education: basicInfo?.education || null,
       has_driver_license: parseBoolean(basicInfo?.hasLicense),
