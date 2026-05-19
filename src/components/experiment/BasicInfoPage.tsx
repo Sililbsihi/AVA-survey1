@@ -61,6 +61,7 @@ export default function BasicInfoPage({ variant = 'info' }: { variant?: string }
   const [formData, setFormData] = useState({
     name: experimentData.basicInfo.name || '',
     gender: experimentData.basicInfo.gender || '',
+    phone: experimentData.basicInfo.phone || '',
     age: experimentData.basicInfo.age || '',
     education: experimentData.basicInfo.education || '',
     hasLicense: experimentData.basicInfo.hasLicense || '',
@@ -72,8 +73,10 @@ export default function BasicInfoPage({ variant = 'info' }: { variant?: string }
   const [error, setError] = useState('');
 
   const validateInfo = () => {
-    if (!formData.name.trim()) return '请填写姓名';
+    if (!formData.name.trim()) return '请填写真实姓名(用于被试费发放)';
     if (!formData.gender) return '请选择性别';
+    if (!formData.phone.trim()) return '请填写手机号';
+    if (!/^1[3-9]\d{9}$/.test(formData.phone.trim())) return '请输入正确的手机号';
     if (!formData.age.trim()) return '请填写年龄';
     if (!formData.education) return '请选择受教育程度';
     if (!formData.hasLicense) return '请选择是否有驾照';
@@ -251,9 +254,22 @@ export default function BasicInfoPage({ variant = 'info' }: { variant?: string }
           </div>
         </div>
 
+        {/* 手机号 */}
+        <div className="question-card">
+          <span className="question-label">3. 手机号</span>
+          <input
+            type="tel"
+            value={formData.phone}
+            onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+            className="input-glow"
+            placeholder="请输入手机号（用于发放被试费）"
+            maxLength={11}
+          />
+        </div>
+
         {/* 年龄 */}
         <div className="question-card">
-          <span className="question-label">3. 年龄</span>
+          <span className="question-label">4. 年龄</span>
           <input
             type="text"
             value={formData.age}
@@ -265,7 +281,7 @@ export default function BasicInfoPage({ variant = 'info' }: { variant?: string }
 
         {/* 受教育程度 */}
         <div className="question-card">
-          <span className="question-label">4. 受教育程度</span>
+          <span className="question-label">5. 受教育程度</span>
           <div className="grid grid-cols-3 gap-2">
             {educationOptions.map(opt => (
               <button
@@ -281,7 +297,7 @@ export default function BasicInfoPage({ variant = 'info' }: { variant?: string }
 
         {/* 有无驾照 */}
         <div className="question-card">
-          <span className="question-label">5. 有无驾照</span>
+          <span className="question-label">6. 有无驾照</span>
           <div className="flex gap-3">
             <button
               onClick={(e) => { e.stopPropagation(); handleRipple(e); setFormData(prev => ({ ...prev, hasLicense: '有' })); }}
@@ -308,7 +324,7 @@ export default function BasicInfoPage({ variant = 'info' }: { variant?: string }
         {formData.hasLicense === '有' && (
           <>
             <div className="question-card">
-              <span className="question-label">6. 驾龄（年）</span>
+              <span className="question-label">7. 驾龄（年）</span>
               <input
                 type="text"
                 value={formData.drivingYears}
@@ -319,7 +335,7 @@ export default function BasicInfoPage({ variant = 'info' }: { variant?: string }
             </div>
 
             <div className="question-card">
-              <span className="question-label">7. 驾驶里程（km）</span>
+              <span className="question-label">8. 驾驶里程（km）</span>
               <input
                 type="text"
                 value={formData.drivingMileage}
@@ -330,7 +346,7 @@ export default function BasicInfoPage({ variant = 'info' }: { variant?: string }
             </div>
 
             <div className="question-card">
-              <span className="question-label">8. 有无辅助驾驶经验</span>
+              <span className="question-label">9. 有无辅助驾驶经验</span>
               <div className="text-white/50 text-xs mb-3">如自适应巡航、车道保持、自动泊车等</div>
               <div className="flex gap-3">
                 <button
