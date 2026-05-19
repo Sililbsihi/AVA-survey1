@@ -24,6 +24,7 @@ const questionLabels: Record<string, string> = {
   'q7_screening': 'Q7-相比于周围的人，我对自动驾驶技术有更多的了解',
   'name': '姓名',
   'gender': '性别',
+  'phone': '手机号',
   'age': '年龄',
   'education': '受教育程度',
   'has_driver_license': '是否有驾照',
@@ -66,6 +67,7 @@ const fieldOrder = [
   // 基本信息
   'name',
   'gender',
+  'phone',
   'age',
   'education',
   'has_driver_license',
@@ -103,7 +105,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const password = searchParams.get('password');
 
-  /*  if (password !== 'admin123') {
+    /*if (password !== 'admin123') {
       return NextResponse.json(
         { success: false, error: '权限验证失败' },
         { status: 401 }
